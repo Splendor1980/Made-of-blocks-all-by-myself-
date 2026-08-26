@@ -1,9 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("mcApi", {
-  getParts: () => ipcRenderer.invoke("getParts"),
-  recolor: (part, color) => ipcRenderer.invoke("recolor", { part, color }),
-  reset: () => ipcRenderer.invoke("reset"),
+  listTemplates: () => ipcRenderer.invoke("listTemplates"),
+  recolorTemplate: (templateId, colors, part, partColor) =>
+    ipcRenderer.invoke("recolorTemplate", { templateId, colors, part, partColor }),
+  importSkin: (dataUrl) => ipcRenderer.invoke("importSkin", { dataUrl }),
+  getMetrics: () => ipcRenderer.invoke("getMetrics"),
   export: (dataUrl) => ipcRenderer.invoke("export", { dataUrl }),
   sidecarStatus: () => ipcRenderer.invoke("sidecarStatus"),
   startSidecar: () => ipcRenderer.invoke("startSidecar"),

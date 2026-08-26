@@ -1,28 +1,40 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import { join } from "node:path";
-import { writeFile } from "node:fs/promises";
+import { writeFile, readdir, readFile } from "node:fs/promises";
 import {
-  createBlankTemplate,
+  loadTemplate,
   recolorTemplate,
+  recolorPart,
   encodePng,
   validateSkin,
+  decodePng,
+  importSkin,
 } from "@mc-agent/core";
 import { startSidecar, stopSidecar, sidecarState } from "./sidecar.js";
+import * as metrics from "./metrics.js";
 
-const PARTS = ["head", "torso", "rightArm", "leftArm", "rightLeg", "leftLeg"];
+const TEMPLATES_DIR = join(import.meta.dirname, "..", "..", "assets", "templates");
 
-let overrides = {};
-let template = createBlankTemplate("demo", "classic", [
-  { name: "head", defaultColor: "#8b5a2b" },
-  { name: "torso", defaultColor: "#3b6ea5" },
-  { name: "rightArm", defaultColor: "#3b6ea5" },
-  { name: "leftArm", defaultColor: "#3b6ea5" },
-  { name: "rightLeg", defaultColor: "#2b2b2b" },
-  { name: "leftLeg", defaultColor: "#2b2b2b" },
-]);
+async function templateList() {
+  const files = await readdir(TEMPLATES_DIR).catch(() => []);
+  const ids = files
+    .filter((f) => f.endsWith(".slots.json"))
+    .map((f) => f.replace(/\.slots\.json$/, ""));
+  const out = [];
+  for (const id of ids) {
+    try {
+      const d = JSON.parse(await readFile(join(TEMPLATES_DIR, `${id}.slots.json`), "utf8"));
+      out.push({ id, displayName: d.displayName ?? id });
+    } catch {
+      out.push({ id, displayName: id });
+    }
+  }
+  return out;
+}
 
-function render() {
-  const img = recolorTemplate(template, overrides);
+function renderTemplate(id, overrides, part, partColor) {
+  const tpl = loadTemplate(TEMPLATES_DIR, id);
+  const img = part && partColor ? recolorPart(tpl, part, partColor, overrides) : recolorTemplate(tpl, overrides);
   const v = validateSkin(img);
   if (!v.valid) throw new Error(v.errors.join("; "));
   const png = encodePng(img);
@@ -31,8 +43,8 @@ function render() {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 900,
-    height: 640,
+    width: 960,
+    height: 680,
     webPreferences: {
       preload: join(import.meta.dirname, "preload.js"),
       contextIsolation: true,
@@ -40,17 +52,22 @@ function createWindow() {
     },
   });
   win.loadFile(join(import.meta.dirname, "index.html"));
+  return win;
 }
 
-ipcMain.handle("getParts", () => PARTS);
-ipcMain.handle("recolor", (_e, { part, color }) => {
-  overrides[part] = color;
-  return render();
+ipcMain.handle("listTemplates", () => templateList());
+ipcMain.handle("recolorTemplate", (_e, { templateId, colors, part, partColor }) =>
+  renderTemplate(templateId, colors, part, partColor),
+);
+ipcMain.handle("importSkin", async (_e, { dataUrl }) => {
+  const b64 = dataUrl.replace(/^data:image\/[a-z]+;base64,/, "");
+  const buf = Buffer.from(b64, "base64");
+  const img = decodePng(buf);
+  const { model, result } = importSkin(img, { model: "auto" });
+  if (!result.valid) throw new Error(result.errors.join("; "));
+  return { model, dataUrl: `data:image/png;base64,${encodePng(img).toString("base64")}` };
 });
-ipcMain.handle("reset", () => {
-  overrides = {};
-  return render();
-});
+ipcMain.handle("getMetrics", () => metrics.get());
 ipcMain.handle("export", async (_e, { dataUrl }) => {
   const out = await dialog.showSaveDialog({
     defaultPath: "skin.png",
@@ -59,24 +76,17 @@ ipcMain.handle("export", async (_e, { dataUrl }) => {
   if (out.canceled || !out.filePath) return { ok: false };
   const b64 = dataUrl.replace(/^data:image\/png;base64,/, "");
   await writeFile(out.filePath, Buffer.from(b64, "base64"));
+  await metrics.recordPng();
   return { ok: true, path: out.filePath };
 });
-
 ipcMain.handle("startSidecar", () => {
-  try {
-    return startSidecar();
-  } catch {
-    return { state: "error" };
-  }
+  try { return startSidecar(); } catch { return { state: "error" }; }
 });
 ipcMain.handle("sidecarStatus", () => sidecarState());
 
-app.whenReady().then(() => {
-  try {
-    startSidecar();
-  } catch {
-    // OpenCode sidecar is optional for the stub; continue without it.
-  }
+app.whenReady().then(async () => {
+  await metrics.recordLaunch();
+  try { startSidecar(); } catch { /* optional */ }
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
