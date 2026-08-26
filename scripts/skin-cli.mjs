@@ -1,20 +1,74 @@
-import { mkdir, writeFile, readdir } from "node:fs/promises";
-import { join } from "node:path";
-import { loadTemplate, recolorTemplate, recolorPart, validateSkin, encodePng } from "@mc-agent/core";
+import { writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import {
+  loadTemplate,
+  recolorTemplate,
+  recolorPart,
+  validateSkin,
+  decodePng,
+  encodePng,
+} from "../packages/core/dist/skin/index.js";
+import * as metrics from "../packages/app/metricsStore.js";
 
-const TEMPLATES = join(process.cwd(), "assets", "templates");
-const files = await readdir(TEMPLATES);
-const ids = files.filter((f) => f.endsWith(".slots.json")).map((f) => f.replace(/\.slots\.json$/, ""));
-console.log("available templates:", ids);
+const here = dirname(fileURLToPath(import.meta.url));
+const assets = join(here, "..", "assets", "templates");
 
-if (ids.length === 0) {
-  console.log("No templates found in assets/templates. Add a <id>.slots.json + <id>.png.");
-  process.exit(0);
+const templateIds = ["knight"];
+
+function parseArgs(argv) {
+  const out = { cmd: argv[2] || "list", id: argv[3], color: argv[4], part: null, write: false, out: "out/skin-cli.png" };
+  for (let i = 5; i < argv.length; i++) {
+    if (argv[i] === "--write") out.write = true;
+    else if (argv[i] === "--out") out.out = argv[++i];
+    else if (!argv[i].startsWith("--")) out.part = argv[i];
+  }
+  return out;
 }
 
-const tpl = loadTemplate(TEMPLATES, ids[0]);
-const img = recolorPart(tpl, "head", "#ff0000");
-const v = validateSkin(img);
-await mkdir("out", { recursive: true });
-await writeFile(join("out", "skin-cli.png"), encodePng(img));
-console.log(`wrote out/skin-cli.png via template '${ids[0]}' (model=${v.model}, valid=${v.valid})`);
+async function main() {
+  const args = parseArgs(process.argv);
+  await metrics.recordLaunch();
+
+  if (args.cmd === "list") {
+    console.log("templates: " + templateIds.join(", "));
+    return;
+  }
+
+  if (args.cmd !== "run") {
+    console.error("usage: skin-cli.mjs [list | run <id> <hexcolor> [--write] [--out file]]");
+    process.exit(2);
+  }
+
+  const tpl = await loadTemplate(assets, args.id);
+  const color = "#" + args.color.replace("#", "");
+  const part = args.part || null;
+
+  let outTpl;
+  if (part) {
+    outTpl = recolorPart(tpl, part, color);
+  } else {
+    const overrides = {};
+    for (const s of tpl.slots) overrides[s.name] = color;
+    outTpl = recolorTemplate(tpl, overrides);
+  }
+
+  const v = validateSkin(outTpl);
+  if (!v.valid) {
+    console.error("VALIDATION FAILED: " + v.errors.join("; "));
+    process.exit(1);
+  }
+  console.log(`template=${args.id} part=${part ?? "all"} model=${v.model} valid=true`);
+
+  if (args.write) {
+    const png = encodePng(outTpl);
+    await writeFile(args.out, png);
+    await metrics.recordPng();
+    console.log("wrote " + args.out);
+  }
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

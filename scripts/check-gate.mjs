@@ -1,16 +1,12 @@
-import { readFile } from "node:fs/promises";
-import { gateStatus } from "../packages/app/metricsCore.js";
+import * as metrics from "../packages/app/metricsStore.js";
 
-const path = process.argv[2] || "./metrics.json";
-let state;
-try {
-  state = JSON.parse(await readFile(path, "utf8"));
-} catch {
-  state = { launches: 0, png: 0, returns: 0, days: [] };
-}
-const g = gateStatus(state);
+// Reads the shared metrics store (same file as the UI and skin-cli use).
+// Optional arg: path to a metrics.json to inspect instead of the default store.
+const path = process.argv[2];
+const state = path ? await metrics.load(path) : await metrics.get();
+const g = metrics.gateStatus(state);
 console.log(
   `Gate 0: launches=${g.launches}/${g.thresholds.launches} ` +
     `png=${g.png}/${g.thresholds.png} returns=${g.returns}/${g.thresholds.returns}`,
 );
-console.log(g.passed ? "PASS -> crafter may be enabled (remove disable:true)" : "not yet");
+console.log(g.passed ? "PASS -> crafter may be enabled (run scripts/gate-switch.mjs)" : "not yet");
