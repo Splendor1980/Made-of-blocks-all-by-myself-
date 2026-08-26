@@ -1,0 +1,14 @@
+{
+  "id": "crafter",
+  "displayName": "Builder & Datapack Crafter",
+  "agent": "crafter",
+  "description": "Deterministic Minecraft builds (.mcfunction/.nbt) and textureless datapacks. Security-scanned; no world-rule or command-block commands.",
+  "tools": [
+    "build_mcfunction",
+    "build_nbt",
+    "datapack_create"
+  ],
+  "gate": 0,
+  "enabled": false,
+  "note": "Gated: enable only after skins profile reaches Gate 0 metrics (>=20 launches, >=10 PNG, >=5 returns)."
+}

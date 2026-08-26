@@ -1,0 +1,14 @@
+{
+  "name": "@mc-agent/core",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "minecraft-data": "^3.113.2"
+  }
+}

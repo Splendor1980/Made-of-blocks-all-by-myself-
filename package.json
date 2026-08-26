@@ -1,0 +1,27 @@
+{
+  "name": "mc-agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Desktop agentic shell over OpenCode for Minecraft creativity (skins, datapacks, structures).",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.18.23",
+    "@types/node": "^22.0.0",
+    "@types/pngjs": "^6.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "dependencies": {
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0"
+  }
+}

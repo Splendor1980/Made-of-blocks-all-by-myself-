@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:;" />
+    <title>mc-agent — Skins</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #14181f; color: #e6e6e6; }
+      h1 { font-size: 18px; }
+      .row { display: flex; gap: 16px; align-items: flex-start; }
+      .panel { background: #1d232d; padding: 12px; border-radius: 8px; }
+      img.preview { image-rendering: pixelated; width: 256px; height: 256px; background: #333; border: 1px solid #333; }
+      button { background: #2b3a4a; color: #fff; border: 0; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin: 2px; }
+      button:hover { background: #36506a; }
+      .part { display: inline-block; }
+      #status { font-size: 12px; opacity: 0.7; }
+    </style>
+  </head>
+  <body>
+    <h1>mc-agent — Skin Studio (stub)</h1>
+    <div class="row">
+      <div class="panel">
+        <img id="preview" class="preview" alt="skin preview" />
+        <div><button id="reset">Reset</button><button id="export">Export PNG</button></div>
+        <div id="status">sidecar: <span id="sidecar">unknown</span></div>
+      </div>
+      <div class="panel">
+        <p>Pick a part, then a color:</p>
+        <div id="parts"></div>
+        <p><input type="color" id="color" value="#ff5555" /> <button id="apply">Apply</button></p>
+        <p><em>Stage 1 (deterministic): no LLM pixels. LLM assist (Stage 2) arrives via the OpenCode sidecar.</em></p>
+      </div>
+    </div>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

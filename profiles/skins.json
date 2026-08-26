@@ -1,0 +1,15 @@
+{
+  "id": "skins",
+  "displayName": "Skin Studio",
+  "agent": "skins",
+  "description": "Deterministic Minecraft skin generation: validate, recolor templates, import, edit regions. No AI pixels in Stage 1.",
+  "tools": [
+    "validate_skin",
+    "recolor_template",
+    "import_skin",
+    "edit_skin_region"
+  ],
+  "assetDir": "assets/templates",
+  "gate": 0,
+  "enabled": true
+}
