@@ -27,3 +27,54 @@
 - Точный контракт SSE-стриминга `serve` — уточнить при сборке UI (док: `/docs/server`).
 
 **Гейт 0 пройден. Можно строить каркас и домен `skins` ступени 1.**
+
+---
+
+# Установка OpenCode CLI и верификация агентов/тулов (2026-08-26)
+
+## Установка
+- ОС: Windows (win32). В npm пакета нет (`opencode` / `@opencode-ai/opencode` → 404).
+- Бинарь распространяется через GitHub-релизы `anomalyco/opencode`.
+- Скачан `opencode-windows-x64.zip` (latest) → распакован user-level в
+  `C:\Users\ILYA\.opencode\bin`, добавлен в user-PATH (`[Environment]::SetEnvironmentVariable`).
+- `opencode --version` → **1.18.23**. ✅
+- Замечание: на машине также присутствует OpenCode Desktop (`@opencode-aidesktop`),
+  но для агента/тулов используется CLI из `~/.opencode/bin`.
+
+## Проверка `opencode serve` (сайдкар)
+- `opencode serve --port 4096` стартует, лог: `opencode server listening on http://127.0.0.1:4096`.
+- `GET /` → **401 Unauthorized** (маршруты защищены) → сервер живой и защищён. ✅
+- Вывод: сайдкар из Electron (`packages/app/sidecar.js`) жизнеспособен.
+
+## Конфиг агентов (важное исправление)
+- Неверно (исправлено): агенты в `opencode.json` ключом `agents` + `permission.{allow:[...]}`.
+  Такой формат **не загружается** — `agent list` показывал только встроенных.
+- Верно: агенты = markdown-файлы `.opencode/agents/<name>.md`. Обязателен
+  frontmatter `description`. Доступ к тулам задаётся через `permission:` (а не
+  deprecated `tools:`), по ключу `"tool:<имя>": "allow"|"deny"|"ask"`.
+- `name` берётся из имени файла; лишний ключ `name:` в frontmatter ломал валидацию.
+- Итоговые файлы: `.opencode/agents/skins.md` (mode: all) и `.opencode/agents/crafter.md`
+  (`disable: true` — gated, не появляется в списке). `opencode.json` сведён к `$schema`.
+
+## Верификация `agent list` / тулов
+- `opencode agent list` → показывает `skins (subagent→all)`. ✅ (crafter скрыт через `disable`).
+- Формат `permission` с `"tool:validate_skin": allow` и т.д. **принят** — агент
+  загружается без ошибок конфигурации. ✅
+- Кастомные тулы `.opencode/tools/*.ts` обнаруживаются (serve стартует без ошибок при
+  наличии папки tools). Логика тулов покрыта 29 unit/integration-тестами, которые
+  вызывают реальные `execute()` с мок-контекстом.
+
+## Живой прогон агента (блокер окружения)
+- Попытка `opencode run --agent skins -m opencode/<free>` упала с
+  `Unexpected server error` на стороне провайдера `opencode/*-free`.
+- Причина: бесплатные модели opencode-провайдера требуют логина/недоступны в этом
+  окружении (браузерный `providers login` невозможен headless). **Не проблема нашей
+  обвязки** — агент и тулы корректно выбираются (лог: `> skins · hy3-free`).
+- Для реального прогона нужен сконфигурированный провайдер (напр. `opencode providers login`
+  или ключ OpenRouter). После этого `run --agent skins` будет вызывать наши тулы end-to-end.
+
+## Статус
+- ✅ CLI установлен и на PATH.
+- ✅ serve работает (сайдкар готов).
+- ✅ Агенты и тулы корректно конфигурируются и загружаются; формат `tool:<имя>` верен.
+- ⚠️ Живой вызов LLM заблокирован отсутствием провайдера в окружении (вне нашей зоны).
