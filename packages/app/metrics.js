@@ -1,20 +1,15 @@
 import { app } from "electron";
 import { join } from "node:path";
 import { readFile, writeFile } from "node:fs/promises";
+import { emptyState, recordLaunch, recordPng } from "./metricsCore.js";
 
 const FILE = join(app.getPath("userData"), "metrics.json");
 
-const DEFAULT = { launches: 0, png: 0, returns: 0, days: [] };
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export async function load() {
   try {
-    return { ...DEFAULT, ...JSON.parse(await readFile(FILE, "utf8")) };
+    return { ...emptyState(), ...JSON.parse(await readFile(FILE, "utf8")) };
   } catch {
-    return { ...DEFAULT };
+    return emptyState();
   }
 }
 
@@ -23,20 +18,13 @@ async function save(state) {
 }
 
 export async function recordLaunch() {
-  const s = await load();
-  s.launches += 1;
-  const d = today();
-  if (!s.days.includes(d)) {
-    s.days.push(d);
-    if (s.days.length > 1) s.returns += 1;
-  }
+  const s = recordLaunch(await load());
   await save(s);
   return s;
 }
 
 export async function recordPng() {
-  const s = await load();
-  s.png += 1;
+  const s = recordPng(await load());
   await save(s);
   return s;
 }
