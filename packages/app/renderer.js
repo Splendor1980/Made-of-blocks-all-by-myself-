@@ -101,6 +101,8 @@ async function init() {
   }
 
   document.getElementById("import").onchange = async (e) => {
+    const errEl = document.getElementById("importError");
+    errEl.textContent = "";
     const file = e.target.files[0];
     if (!file) return;
     const dataUrl = await new Promise((r) => {
@@ -108,10 +110,14 @@ async function init() {
       fr.onload = () => r(fr.result);
       fr.readAsDataURL(file);
     });
-    const res = await api.importSkin(dataUrl);
-    current = { templateId: null, colors: {}, imported: res.dataUrl };
-    document.getElementById("templateName").textContent = `Imported (${res.model})`;
-    setPreview(res.dataUrl);
+    try {
+      const res = await api.importSkin(dataUrl);
+      current = { templateId: null, colors: {}, imported: res.dataUrl };
+      document.getElementById("templateName").textContent = `Imported (${res.model})`;
+      setPreview(res.dataUrl);
+    } catch (err) {
+      errEl.textContent = "Import failed: " + (err && err.message ? err.message : err);
+    }
   };
 
   document.getElementById("export").onclick = async () => {
