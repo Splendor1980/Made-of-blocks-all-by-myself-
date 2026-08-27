@@ -16,6 +16,10 @@ export function encodePng(img: RGBA): Buffer {
   return PNG.sync.write(p);
 }
 
+export function toDataUrl(img: RGBA): string {
+  return `data:image/png;base64,${encodePng(img).toString("base64")}`;
+}
+
 export function decodeImage(buffer: Buffer, isJpeg: boolean): RGBA {
   if (isJpeg) {
     const decoded = jpeg.decode(buffer, { maxMemoryUsageInMB: 256 });

@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld("mcApi", {
   importSkin: (dataUrl) => ipcRenderer.invoke("importSkin", { dataUrl }),
   getMetrics: () => ipcRenderer.invoke("getMetrics"),
   export: (dataUrl) => ipcRenderer.invoke("export", { dataUrl }),
+  saveProject: (dataUrl, name) => ipcRenderer.invoke("saveProject", { dataUrl, name }),
   partRegions: (part) => ipcRenderer.invoke("partRegions", { part }),
   paintSkin: (dataUrl, part, x, y, color, size) =>
     ipcRenderer.invoke("paintSkin", { dataUrl, part, x, y, color, size }),
@@ -15,4 +16,7 @@ contextBridge.exposeInMainWorld("mcApi", {
   getGateStatus: () => ipcRenderer.invoke("getGateStatus"),
   generateWorld: (opts) => ipcRenderer.invoke("generateWorld", opts),
   openPath: (path) => ipcRenderer.invoke("openPath", { path }),
+  previewWorld: (opts) => ipcRenderer.invoke("previewWorld", opts),
+  previewImport: (opts) => ipcRenderer.invoke("previewImport", opts),
+  importNbt: (opts) => ipcRenderer.invoke("importNbt", opts),
 });

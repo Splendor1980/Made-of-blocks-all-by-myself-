@@ -32,6 +32,8 @@ In the OpenCode chat, tell the **skins** agent what you want, e.g.:
 - Double-click the **`mc-agent Skin Studio`** shortcut on your Desktop, **or**
   run `cd packages/app && npm start`, **or** ask the skins agent to open it.
 - In the window: pick a template (Knight / Mage / Robot), click a body part and a color, import your own PNG and paint on it, then **Export PNG**.
+- **Describe a skin in words:** in the OpenCode chat, tell the skins agent e.g. “make me a glowing ice mage” or “a dark steel robot” — it picks a template and colors from your words (no AI image model needed).
+- **Save your work:** use **Save project** / **Load project** in the window to keep a skin (with all edits) as a `.mcskin.json` file and reopen it later.
 
 ---
 
@@ -44,7 +46,8 @@ In the OpenCode chat, tell the **crafter** agent, e.g.:
 
 **Way B — Worlds panel in the Skin Studio window:**
 - Open the **Worlds** panel on the right.
-- Pick a **Type** (house / box / tower / pyramid / fence / wall), a **Block**, a **Size**, then **Generate datapack**.
+- Pick a **Type** (house / box / tower / pyramid / fence / wall / sphere / dome / bridge / stairs), a **Block**, a **Size**, then **Generate datapack**. You'll see a **live isometric preview** of the shape.
+- **Import your own build:** click **Import .nbt**, choose a Minecraft structure file (`.nbt`), preview it, then **Import to datapack** — it wraps your structure into a fresh datapack (nothing is written into an existing world automatically).
 - The panel shows an in-game command like `/function genmod:build_pyramid`.
 - Copy the generated folder (it tells you where) into your world:
   `saves/<your-world>/datapacks/`.

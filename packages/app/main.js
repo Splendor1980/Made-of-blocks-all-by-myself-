@@ -15,6 +15,9 @@ import {
   createDatapack,
   writeStructureNbt,
   generateGrid,
+  renderPreview,
+  readStructureNbt,
+  toDataUrl,
 } from "@mc-agent/core";
 import { startSidecar, stopSidecar, sidecarState } from "./sidecar.js";
 import * as metrics from "./metrics.js";
@@ -108,6 +111,16 @@ ipcMain.handle("export", async (_e, { dataUrl }) => {
 ipcMain.handle("startSidecar", () => {
   try { return startSidecar(); } catch { return { state: "error" }; }
 });
+ipcMain.handle("saveProject", async (_e, { dataUrl, name }) => {
+  const out = await dialog.showSaveDialog({
+    defaultPath: name || "skin-project.mcskin.json",
+    filters: [{ name: "mc-agent skin project", extensions: ["mcskin.json", "json"] }],
+  });
+  if (out.canceled || !out.filePath) return { ok: false };
+  const b64 = dataUrl.replace(/^data:.*;base64,/, "");
+  await writeFile(out.filePath, Buffer.from(b64, "base64"));
+  return { ok: true, path: out.filePath };
+});
 ipcMain.handle("sidecarStatus", () => sidecarState());
 
 ipcMain.handle("getGateStatus", async () => {
@@ -147,6 +160,47 @@ ipcMain.handle("openPath", async (_e, { path }) => {
     return { ok: false, error: (err && err.message) || String(err) };
   }
 });
+
+ipcMain.handle("previewWorld", async (_e, { type = "house", block = "minecraft:oak_planks", size = 5 }) => {
+  const grid = generateGrid(type, block, size);
+  return { dataUrl: toDataUrl(renderPreview(grid, { tile: 8 })) };
+});
+
+ipcMain.handle("previewImport", async (_e, { data }) => {
+  const buf = Buffer.from(data, "base64");
+  const grid = readStructureNbt(buf);
+  return {
+    dataUrl: toDataUrl(renderPreview(grid, { tile: 8 })),
+    size: [grid.width, grid.height, grid.depth],
+    blockCount: grid.blocks.filter(Boolean).length,
+  };
+});
+
+ipcMain.handle(
+  "importNbt",
+  async (_e, { data, id, out = "out/imported", namespace = "imported" }) => {
+    const buf = Buffer.from(data, "base64");
+    const grid = readStructureNbt(buf);
+    const blockCount = grid.blocks.filter(Boolean).length;
+    const structId = (id || "imported").replace(/[^a-z0-9_]/gi, "_").toLowerCase();
+    const dp = createDatapack({
+      name: "imported_pack",
+      namespace,
+      description: `mc-agent import ${id}`,
+    });
+    dp.addStructure(structId, buf);
+    dp.addFunction({
+      id: `build_${structId}`,
+      commands: [`structure load ${namespace}:${structId} ~ ~ ~`, `say imported ${structId}`],
+    });
+    const v = dp.validate();
+    if (!v.valid) throw new Error(v.errors.join("; "));
+    const outDir = join(REPO_ROOT, out);
+    await mkdir(outDir, { recursive: true });
+    const files = await dp.build(outDir);
+    return { files, command: `/function ${namespace}:build_${structId}`, id: structId, blockCount, outDir };
+  },
+);
 
 app.whenReady().then(async () => {
   await metrics.recordLaunch();

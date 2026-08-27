@@ -28,7 +28,12 @@
          <canvas id="preview" class="preview" alt="skin preview"></canvas>
          <div id="templateName"></div>
          <div><em>Drag to rotate the 3D preview.</em></div>
-         <div><button id="export">Export PNG</button></div>
+          <div class="row">
+            <button id="export">Export PNG</button>
+            <button id="saveProject">Save project</button>
+            <button id="loadProject">Load project</button>
+            <input type="file" id="loadProjectFile" accept=".mcskin.json,application/json" style="display:none" />
+          </div>
          <div id="metrics">metrics: …</div>
        </div>
       <div class="panel">
@@ -86,6 +91,16 @@
             <button class="preset" data-type="sphere" data-size="7" data-block="minecraft:glass">Sphere</button>
             <button class="preset" data-type="dome" data-size="9" data-block="minecraft:quartz_block">Dome</button>
             <button class="preset" data-type="bridge" data-size="9" data-block="minecraft:oak_planks">Bridge</button>
+          </div>
+          <div class="row">
+            <img id="worldPreview" alt="preview" title="Isometric preview"
+              style="width:170px;height:210px;background:#15151a;border:1px solid #333;image-rendering:pixelated" />
+            <div style="flex:1">
+              <p style="margin:0 0 6px">Import an existing <code>.nbt</code> structure:</p>
+              <input type="file" id="worldImport" accept=".nbt" />
+              <div id="worldImportInfo" style="font-size:12px;opacity:.85;min-height:1.2em;margin-top:4px"></div>
+              <button id="worldImportBtn" style="display:none">Import to datapack</button>
+            </div>
           </div>
           <div class="row">
             <button id="worldGen">Generate datapack</button>

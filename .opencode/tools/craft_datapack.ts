@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { tool } from "@opencode-ai/plugin";
 import { generateGrid, type VoxelGrid } from "@mc-agent/core";
 import buildNbt from "./build_nbt";
@@ -15,9 +16,17 @@ function gridToVoxels(g: VoxelGrid) {
   return voxels;
 }
 
+type PrimitiveSpec = { type: string; block: string; size: number; id?: string };
+type NbtSpec = { nbtPath: string; id: string };
+type StructureSpec = PrimitiveSpec | NbtSpec;
+
+function isNbtSpec(s: StructureSpec): s is NbtSpec {
+  return (s as NbtSpec).nbtPath !== undefined;
+}
+
 export default tool({
   description:
-    "Build a full Minecraft datapack in ONE call: an optional embedded .nbt structure (from a primitive type) plus " +
+    "Build a full Minecraft datapack in ONE call: optional embedded .nbt structures (from primitives OR a prebuilt .nbt path) plus " +
     "recipes, advancements, loot tables and functions. Wraps build_nbt + datapack_create. " +
     "Output is a NEW folder; copy it into saves/<world>/datapacks/.",
   args: {
@@ -28,7 +37,19 @@ export default tool({
     structure: tool.schema
       .object({ type: tool.schema.string(), block: tool.schema.string(), size: tool.schema.number(), id: tool.schema.string().optional() })
       .optional()
-      .describe("Optional embedded structure built from a primitive (house|box|tower|pyramid|fence|wall)."),
+      .describe("Single embedded structure built from a primitive (house|box|tower|pyramid|fence|wall|sphere|dome|bridge|stairs)."),
+    structures: tool.schema
+      .array(
+        tool.schema.object({
+          id: tool.schema.string().optional(),
+          type: tool.schema.string().optional(),
+          block: tool.schema.string().optional(),
+          size: tool.schema.number().optional(),
+          nbtPath: tool.schema.string().optional(),
+        }),
+      )
+      .optional()
+      .describe("Multiple structures to embed (primitives and/or {nbtPath,id}) — builds a 'scene'."),
     recipes: tool.schema.array(tool.schema.any()).optional().describe("Recipe specs (shaped/shapeless/stonecutter)."),
     functions: tool.schema
       .array(tool.schema.object({ id: tool.schema.string(), commands: tool.schema.array(tool.schema.string()) }))
@@ -37,20 +58,39 @@ export default tool({
     loot: tool.schema.array(tool.schema.any()).optional(),
   },
   async execute(input, ctx) {
-    let embeddedStructures: { id: string; nbtPath: string }[] | undefined;
-    if (input.structure) {
-      const { type, block, size, id } = input.structure;
-      const grid = generateGrid(type, block, size);
-      const structId = id ?? `${type}_${size}`;
-      const nbtRel = join("out", `${structId}.nbt`);
-      const nbtRes = JSON.parse(
-        (await buildNbt.execute(
-          { size: [grid.width, grid.height, grid.depth], voxels: gridToVoxels(grid), output: nbtRel },
-          ctx,
-        )) as string,
-      );
-      if (!nbtRes.bytes || nbtRes.bytes <= 0) throw new Error("build_nbt produced no bytes");
-      embeddedStructures = [{ id: structId, nbtPath: nbtRel }];
+    let specs: StructureSpec[] = [];
+    if (input.structures) specs = input.structures as StructureSpec[];
+    else if (input.structure) specs = [input.structure as StructureSpec];
+
+    const embeddedStructures: { id: string; nbtPath: string }[] = [];
+    const functions: { id: string; commands: string[] }[] = [];
+
+    for (const spec of specs) {
+      let structId: string;
+      if (isNbtSpec(spec)) {
+        structId = spec.id;
+        const rel = join("out", `${structId}.nbt`);
+        await mkdir(join(ctx.worktree, "out"), { recursive: true });
+        await writeFile(join(ctx.worktree, rel), await readFile(join(ctx.worktree, spec.nbtPath)));
+        embeddedStructures.push({ id: structId, nbtPath: rel });
+      } else {
+        const { type, block, size, id } = spec as PrimitiveSpec;
+        const grid = generateGrid(type, block ?? "minecraft:oak_planks", size ?? 5);
+        structId = id ?? `${type}_${size ?? 5}`;
+        const nbtRel = join("out", `${structId}.nbt`);
+        const nbtRes = JSON.parse(
+          (await buildNbt.execute(
+            { size: [grid.width, grid.height, grid.depth], voxels: gridToVoxels(grid), output: nbtRel },
+            ctx,
+          )) as string,
+        );
+        if (!nbtRes.bytes || nbtRes.bytes <= 0) throw new Error("build_nbt produced no bytes");
+        embeddedStructures.push({ id: structId, nbtPath: nbtRel });
+      }
+      functions.push({
+        id: `build_${structId}`,
+        commands: [`structure load ${input.namespace}:${structId} ~ ~ ~`, `say placed ${structId}`],
+      });
     }
 
     const dpRes = JSON.parse(
@@ -59,9 +99,9 @@ export default tool({
           name: input.name,
           namespace: input.namespace,
           description: input.description,
-          embeddedStructures,
+          embeddedStructures: embeddedStructures.length ? embeddedStructures : undefined,
           recipes: input.recipes,
-          functions: input.functions,
+          functions: [...functions, ...(input.functions ?? [])],
           advancements: input.advancements,
           loot: input.loot,
           output: input.output,
@@ -70,6 +110,10 @@ export default tool({
       )) as string,
     );
 
-    return JSON.stringify({ structure: embeddedStructures?.[0], datapack: dpRes });
+    return JSON.stringify({
+      structure: embeddedStructures[0],
+      structures: embeddedStructures,
+      datapack: dpRes,
+    });
   },
 });

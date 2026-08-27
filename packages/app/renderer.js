@@ -194,6 +194,35 @@ async function init() {
     if (res.ok) alert("Saved: " + res.path);
   };
 
+  document.getElementById("saveProject").onclick = async () => {
+    const project = { version: 1, app: "mc-agent-skin", current };
+    const json = JSON.stringify(project);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    const res = await api.saveProject(
+      `data:application/json;base64,${b64}`,
+      `skin-project-${Date.now()}.mcskin.json`,
+    );
+    if (res.ok) alert("Project saved: " + res.path);
+  };
+
+  const loadInput = document.getElementById("loadProjectFile");
+  document.getElementById("loadProject").onclick = () => loadInput.click();
+  loadInput.onchange = async () => {
+    const file = loadInput.files && loadInput.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const proj = JSON.parse(text);
+      if (!proj.current || !proj.current.skinUrl) throw new Error("not a skin project file");
+      current = proj.current;
+      document.getElementById("templateName").textContent = current.templateId || "Loaded project";
+      setPreview(current.skinUrl);
+    } catch (err) {
+      alert("Load failed: " + (err && err.message ? err.message : err));
+    }
+    loadInput.value = "";
+  };
+
   buildEditor();
 
   const m = await api.getMetrics();
@@ -224,6 +253,73 @@ async function initWorlds() {
       generateWorld();
     };
   });
+
+  const updatePreview = () => {
+    const type = document.getElementById("worldType").value;
+    const block = document.getElementById("worldBlock").value;
+    const size = parseInt(document.getElementById("worldSize").value, 10) || 5;
+    api.previewWorld({ type, block, size }).then((r) => {
+      if (r && r.dataUrl) document.getElementById("worldPreview").src = r.dataUrl;
+    });
+  };
+  ["worldType", "worldBlock", "worldSize"].forEach((id) =>
+    document.getElementById(id).addEventListener("change", updatePreview),
+  );
+  updatePreview();
+
+  let importData = null;
+  let importId = null;
+  const importInput = document.getElementById("worldImport");
+  importInput.onchange = async () => {
+    const file = importInput.files && importInput.files[0];
+    const info = document.getElementById("worldImportInfo");
+    const btn = document.getElementById("worldImportBtn");
+    if (!file) return;
+    importId = file.name.replace(/\.nbt$/i, "");
+    const dataUrl = await new Promise((res) => {
+      const fr = new FileReader();
+      fr.onload = () => res(fr.result);
+      fr.readAsDataURL(file);
+    });
+    importData = dataUrl.replace(/^data:.*;base64,/, "");
+    info.textContent = "Reading…";
+    const r = await api.previewImport({ data: importData }).catch((e) => ({ error: e.message }));
+    if (r.error) {
+      info.textContent = "Import failed: " + r.error;
+      btn.style.display = "none";
+      return;
+    }
+    document.getElementById("worldPreview").src = r.dataUrl;
+    info.textContent = `Size ${r.size.join("×")}, ${r.blockCount} blocks`;
+    btn.style.display = "inline-block";
+  };
+  document.getElementById("worldImportBtn").onclick = async () => {
+    const status = document.getElementById("worldStatus");
+    const el = document.getElementById("worldResult");
+    if (!importData) return;
+    status.textContent = "Importing…";
+    const res = await api
+      .importNbt({ data: importData, id: importId, out: "out/imported" })
+      .catch((e) => ({ error: (e && e.message) || String(e) }));
+    if (res.error) {
+      status.textContent = "";
+      el.textContent = "Error: " + res.error;
+      return;
+    }
+    status.textContent = "Imported.";
+    el.textContent =
+      `Imported ${res.id} (${res.blockCount} blocks)\n` +
+      `In-game: ${res.command}\n` +
+      `Drop folder into saves/<world>/datapacks/ :\n` +
+      res.files.map((f) => "  " + f).join("\n");
+    const openBtn = document.getElementById("worldOpen");
+    openBtn.style.display = "inline-block";
+    openBtn.onclick = () => api.openPath(res.outDir);
+    const list = document.getElementById("worldList");
+    const item = document.createElement("div");
+    item.textContent = `• imported ${res.id} → ${res.command}`;
+    list.prepend(item);
+  };
 }
 
 async function generateWorld() {
@@ -245,6 +341,8 @@ async function generateWorld() {
     return;
   }
   status.textContent = "Done.";
+  const pv = await api.previewWorld({ type, block, size }).catch(() => null);
+  if (pv && pv.dataUrl) document.getElementById("worldPreview").src = pv.dataUrl;
   el.textContent =
     `Generated ${type} (${block}, size ${size})\n` +
     `In-game: ${res.command}\n` +

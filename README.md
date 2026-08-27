@@ -6,9 +6,9 @@ OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins
 
 ## What's inside
 - `.opencode/agents/` — `skins` (active), `crafter` (active; builds datapacks/structures).
-- `.opencode/tools/` — deterministic skin tools (validate, recolor, import, region-edit, open window) + datapack/build tools.
-- `packages/core` — `@mc-agent/core`: skin/template/region/recolor/import, build (mcfunction/NBT), textureless datapacks.
-- `packages/app` — Electron **Skin Studio** companion window: template cards → 3D preview (skinview3d) → region paint → Export PNG.
+- `.opencode/tools/` — deterministic skin tools (validate, recolor, import, region-edit, `generate_skin` from text, open window) + datapack/build tools (`build_nbt`, `datapack_create`, `generate_world`, `craft_datapack` scenes, `import_structure`).
+- `packages/core` — `@mc-agent/core`: skin/template/region/recolor/import, build (mcfunction/NBT + NBT **reader**), textureless datapacks, **isometric preview** renderer.
+- `packages/app` — Electron **Skin Studio** companion window: template cards → 3D preview (skinview3d) → region paint → Export PNG; **Worlds** panel (shapes, live isometric preview, `.nbt` import) and **skin project Save/Load**.
 - `scripts/` — `skin-cli.mjs` (headless pipeline), `gate-switch.mjs` / `check-gate.mjs` (Gate 0 automation).
 
 ## Prerequisites
@@ -29,14 +29,17 @@ OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins
 ## Graceful degradation
 The Skin Studio buttons work **without** any model/Desktop (deterministic). The agent chat reports "unavailable" if no provider is configured.
 
+## Skins (deterministic, no AI pixels)
+Start from a built-in template (knight/mage/robot) and recolor by body part, import your own 64×64 PNG, or paint specific UV regions in the editor. You can also **describe a skin in text** — the `generate_skin` tool maps keywords (e.g. "glowing ice mage", "dark steel robot") to a template + colors, fully offline. Project **Save/Load** (`.mcskin.json`) preserves the working skin including edits and template state.
+
 ## Gate 0 (skins → crafter)
 `crafter` stays disabled until metrics hit ≥20 launches, ≥10 PNG, ≥5 returns (distinct days). `gate-switch.mjs` runs automatically on every UI/CLI launch (and can be run manually) to auto-remove `disable: true` and log to `docs/gate-log.md`. Thresholds are fixed; metrics are never faked.
 
 ## Worlds (datapacks / structures)
-A **Worlds** panel in the Skin Studio UI calls `generateWorld` and writes a datapack folder; no writes to existing saves happen automatically.
-Headless equivalent: `node scripts/generate-world.mjs --type <house|box|tower|pyramid|fence|wall> --block <id> --size <n> --out <dir>`.
+A **Worlds** panel in the Skin Studio UI calls `generateWorld` and writes a datapack folder; no writes to existing saves happen automatically. The panel shows a **live isometric preview** of the selected shape, and you can **import an existing `.nbt`** structure (it is rendered and wrapped into a fresh datapack with a load function).
+Headless equivalent: `node scripts/generate-world.mjs --type <house|box|tower|pyramid|fence|wall|sphere|dome|bridge|stairs> --block <id> --size <n> --out <dir>`.
 Output is a **folder** (not a zip), e.g. `out/world/pack.mcmeta` + `data/genmod/structures/<type>_<size>.nbt` + `data/genmod/functions/build_<type>.mcfunction`. Copy that folder into `saves/<world>/datapacks/`, then run `/function genmod:build_<type>` in-game.
-The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `build_nbt` for the same result from chat. The higher-level `craft_datapack` tool builds a full datapack in one call — an optional embedded `.nbt` structure **plus** recipes, advancements, loot tables and functions. The `crafter` subagent (`.opencode/agents/crafter.md`, now enabled) uses them: just ask the OpenCode agent to "build a pyramid world" or "make a starter kit with a recipe".
+The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `build_nbt` for the same result from chat. The higher-level `craft_datapack` tool builds a full datapack in **one call** — a single structure **or a `structures` array (a multi-structure "scene")** plus recipes/advancements/loot/functions. `import_structure` imports a player's existing `.nbt` (Java structure format, gzip-aware) — never touches an existing save. The `crafter` subagent (`.opencode/agents/crafter.md`, enabled) uses them: ask the OpenCode agent to "build a pyramid world", "make a starter kit with a recipe", or "import my castle.nbt".
 
 **Example gallery:** `node scripts/make-examples.mjs` generates ready-to-use datapacks into `examples/` (house, pyramid, tower, and a `example_starter_kit` with a recipe + advancement + loot + function). Copy any `examples/<name>` folder into `saves/<world>/datapacks/`.
 

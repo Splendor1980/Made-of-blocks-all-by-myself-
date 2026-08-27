@@ -7,6 +7,7 @@ permission:
   "tool:import_skin": allow
   "tool:edit_skin_region": allow
   "tool:open_skin_studio": allow
+  "tool:generate_skin": allow
   read: allow
   write: allow
   bash: deny
@@ -21,9 +22,12 @@ Workflow:
    valid 64x64 and to detect classic vs slim.
 2. To create from a template, call `recolor_template` (optionally a body part
    + color, or a slot color map). Templates live in `assets/templates`.
-3. To ingest a user upload, call `import_skin` (coerce model, normalize).
-4. To touch specific UV regions, call `edit_skin_region` (solid color or overlay).
-5. Always return the written PNG path and a short human summary.
+ 3. To ingest a user upload, call `import_skin` (coerce model, normalize).
+ 4. To touch specific UV regions, call `edit_skin_region` (solid color or overlay).
+ 5. To create a skin from a TEXT description (e.g. "glowing ice mage"), call
+    `generate_skin` with a prompt; it maps keywords to a template + colors
+    (works fully offline, no AI pixels).
+ 6. Always return the written PNG path and a short human summary.
 
 Stay within the allowed tools. If asked for something outside them, say so.
 

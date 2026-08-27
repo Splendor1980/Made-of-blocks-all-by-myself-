@@ -8,6 +8,7 @@ import validateSkinTool from "./validate_skin";
 import recolorTemplateTool from "./recolor_template";
 import importSkinTool from "./import_skin";
 import editRegionTool from "./edit_skin_region";
+import generateSkinTool from "./generate_skin";
 
 let worktree = "";
 const ctx = {
@@ -72,6 +73,16 @@ describe("skins agent tools", () => {
     );
     expect(res).toMatch(/Edited torso/);
     const img = decodePng(await readFile(join(worktree, "out/torso-green.png")));
+    expect(validateSkin(img).valid).toBe(true);
+  });
+
+  it("generate_skin creates a valid skin from a prompt", async () => {
+    const res = await generateSkinTool.execute(
+      { prompt: "glowing ice mage", templateId: "knight", output: "out/ice-mage.png" },
+      ctx,
+    );
+    expect(res).toMatch(/Generated/);
+    const img = decodePng(await readFile(join(worktree, "out/ice-mage.png")));
     expect(validateSkin(img).valid).toBe(true);
   });
 });
