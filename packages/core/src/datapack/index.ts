@@ -27,7 +27,7 @@ export class Datapack {
   private functions: { path: string; commands: string[]; violations: ScanViolation[] }[] = [];
   private advancements: { path: string; json: Json }[] = [];
   private lootTables: { path: string; json: Json }[] = [];
-  private structures: string[] = [];
+  private structures: { id: string; nbt: Buffer | null }[] = [];
 
   constructor(meta: DatapackMeta) {
     if (!NS_RE.test(meta.namespace)) {
@@ -118,7 +118,14 @@ export class Datapack {
   /** Registers a reference to a structure produced by the build core (.nbt). */
   addStructureRef(id: string): void {
     if (!ID_RE.test(id)) throw new Error(`Invalid structure id: ${id}`);
-    this.structures.push(id);
+    this.structures.push({ id, nbt: null });
+  }
+
+  /** Embeds a real structure `.nbt` (e.g. from `writeStructureNbt`) into the pack. */
+  addStructure(id: string, nbt: Buffer): void {
+    if (!ID_RE.test(id)) throw new Error(`Invalid structure id: ${id}`);
+    if (!Buffer.isBuffer(nbt) || nbt.length === 0) throw new Error(`Invalid structure nbt: ${id}`);
+    this.structures.push({ id, nbt });
   }
 
   validate(): DatapackValidation {
@@ -140,7 +147,7 @@ export class Datapack {
       functions: this.functions.map((f) => ({ id: this.q(f.path), commands: f.commands })),
       advancements: this.advancements.map((a) => ({ id: this.q(a.path), ...a.json })),
       lootTables: this.lootTables.map((l) => ({ id: this.q(l.path), ...l.json })),
-      structures: this.structures.map((s) => `${this.meta.namespace}:${s}`),
+      structures: this.structures.map((s) => `${this.meta.namespace}:${s.id}`),
     };
   }
 
@@ -148,7 +155,7 @@ export class Datapack {
     const root = join(outputDir, this.meta.name);
     const data = join(root, "data", this.meta.namespace);
     const written: string[] = [];
-    const put = async (rel: string, content: string) => {
+    const put = async (rel: string, content: string | Buffer) => {
       const p = join(root, rel);
       await mkdir(join(p, ".."), { recursive: true });
       await writeFile(p, content);
@@ -166,7 +173,10 @@ export class Datapack {
     for (const f of this.functions) await put(`data/${this.meta.namespace}/functions/${f.path}.mcfunction`, f.commands.join("\n") + "\n");
     for (const a of this.advancements) await put(`data/${this.meta.namespace}/advancements/${a.path}.json`, JSON.stringify(a.json, null, 2));
     for (const l of this.lootTables) await put(`data/${this.meta.namespace}/loot_tables/${l.path}.json`, JSON.stringify(l.json, null, 2));
-    for (const s of this.structures) await put(`data/${this.meta.namespace}/structures/${s}.nbt.placeholder`, "");
+    for (const s of this.structures) {
+      if (s.nbt) await put(`data/${this.meta.namespace}/structures/${s.id}.nbt`, s.nbt);
+      else await put(`data/${this.meta.namespace}/structures/${s.id}.nbt.placeholder`, "");
+    }
     return written;
   }
 }

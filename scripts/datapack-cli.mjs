@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createDatapack } from "../packages/core/dist/datapack/index.js";
+import { writeStructureNbt } from "../packages/core/dist/build/index.js";
 
 function parseArgs(argv) {
   const out = { out: "out/datapack" };
@@ -8,6 +9,18 @@ function parseArgs(argv) {
     if (argv[i] === "--out") out.out = argv[++i];
   }
   return out;
+}
+
+function hollowBox(size, block) {
+  const blocks = new Array(size * size * size).fill(null);
+  const idx = (x, y, z) => (y * size + z) * size + x;
+  for (let y = 0; y < size; y++)
+    for (let z = 0; z < size; z++)
+      for (let x = 0; x < size; x++) {
+        const edge = x === 0 || y === 0 || z === 0 || x === size - 1 || y === size - 1 || z === size - 1;
+        if (edge) blocks[idx(x, y, z)] = block;
+      }
+  return { width: size, height: size, depth: size, blocks };
 }
 
 async function main() {
@@ -18,6 +31,9 @@ async function main() {
     namespace: "demomod",
     description: "Headless demo datapack from mc-agent",
   });
+
+  const houseNbt = writeStructureNbt(hollowBox(3, "minecraft:stone"));
+  dp.addStructure("house", houseNbt);
 
   dp.addShapedRecipe({
     id: "magic_block",

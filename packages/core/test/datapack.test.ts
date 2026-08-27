@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { mkdtemp, readFile, rm, mkdir } from "node:fs/promises";
+import { mkdtemp, readFile, rm, mkdir, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createDatapack, Datapack } from "../src/datapack/index.js";
+import { writeStructureNbt } from "../src/build/index.js";
 
 describe("Datapack", () => {
   it("rejects invalid namespace", () => {
@@ -55,5 +56,21 @@ describe("Datapack", () => {
     const v = dp.validate();
     expect(v.valid).toBe(false);
     expect(v.errors.join(" ")).toMatch(/op|execute/);
+  });
+
+  it("embeds a real structure .nbt written by the build core", async () => {
+    const dp = createDatapack({ name: "struct_pack", namespace: "structmod", description: "t" });
+    const grid = { width: 3, height: 3, depth: 3, blocks: new Array(27).fill("minecraft:stone") };
+    const nbt = writeStructureNbt(grid);
+    dp.addStructure("tower", nbt);
+    expect(() => dp.addStructure("bad", Buffer.alloc(0))).toThrow();
+
+    const dir = await mkdtemp(join(tmpdir(), "dp-struct-"));
+    const files = await dp.build(dir);
+    const nbtPath = join(dir, "struct_pack", "data", "structmod", "structures", "tower.nbt");
+    expect(files.some((f) => f.endsWith("tower.nbt"))).toBe(true);
+    const onDisk = await readFile(nbtPath);
+    expect(onDisk.length).toBe(nbt.length);
+    await rm(dir, { recursive: true, force: true });
   });
 });
