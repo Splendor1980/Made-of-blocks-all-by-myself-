@@ -5,6 +5,7 @@ Tracked here so the next step is obvious. Update when resolved.
 ## 1. Electron binary cannot be downloaded from the shell
 - The Electron **npm package installs**, but its **postinstall binary download is blocked**: the shell can reach the npm registry, but **GitHub Releases and CDNs (npmmirror) are unreachable** (`Invoke-WebRequest` to `github.com/electron/electron/releases` and `registry.npmmirror.com/-/binary/electron` both fail with connection errors). `npm rebuild electron` exits 0 but does **not** produce `electron.exe`.
 - **Workaround (done):** the user supplied `electron-v42.10.1-win32-x64.zip`; it was extracted into `node_modules/electron/dist`. The binary (v42) runs the app whose `package.json` pins `electron ^33` — the version mismatch is tolerated, window opens fine. **Do not bump `packages/app/package.json` electron version unless intentional.**
+- **Required extra step (done, local only):** because the binary was placed manually, `node_modules/electron/path.txt` was missing, so the Electron wrapper threw `Electron failed to install correctly`. Created `node_modules/electron/path.txt` containing `electron.exe` (no trailing newline). Without it the window will NOT start even though the binary exists. `path.txt` lives in `node_modules` (gitignored), so after a fresh `npm install` you must recreate it (or re-run with `ELECTRON_OVERRIDE_DIST_PATH` pointing at the dist folder).
 - On a normal machine with internet, `cd packages/app && npm install` downloads the binary automatically.
 
 ## 2. Headless: window cannot be visually verified here
