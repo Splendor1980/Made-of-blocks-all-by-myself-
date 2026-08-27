@@ -5,6 +5,9 @@ import {
   sanitizeFunction,
   scanLine,
   writeStructureNbt,
+  box,
+  pyramid,
+  wall,
   type VoxelGrid,
 } from "../src/build/index.js";
 
@@ -69,5 +72,36 @@ describe("writeStructureNbt", () => {
     const buf = writeStructureNbt(grid);
     expect(Buffer.isBuffer(buf)).toBe(true);
     expect(buf[0]).toBe(0x0a); // TAG_Compound
+  });
+});
+
+describe("generators", () => {
+  it("box fills only the shell when hollow", () => {
+    const g = box(3, "stone", true);
+    expect(g.blocks.filter((b) => b === "stone").length).toBe(26);
+    expect(g.blocks[13]).toBeNull(); // interior center is air
+  });
+  it("box fills everything when solid", () => {
+    const g = box(2, "stone", false);
+    expect(g.blocks.filter((b) => b === "stone").length).toBe(8);
+  });
+  it("pyramid shrinks each layer", () => {
+    const g = pyramid(3, "oak_planks");
+    const idx = (x: number, y: number, z: number) => (y * 3 + z) * 3 + x;
+    expect(g.blocks[idx(1, 0, 1)]).toBe("oak_planks"); // base full (3x3)
+    expect(g.blocks[idx(1, 1, 1)]).toBe("oak_planks"); // top single block (1x1)
+    expect(g.blocks[idx(0, 1, 0)]).toBeNull(); // outside the top layer
+  });
+  it("wall is width x height x 1", () => {
+    const g = wall(4, 2, "brick");
+    expect(g.width).toBe(4);
+    expect(g.height).toBe(2);
+    expect(g.depth).toBe(1);
+    expect(g.blocks.filter((b) => b === "brick").length).toBe(8);
+  });
+  it("generated grids convert to commands and nbt without violations", () => {
+    const { violations } = gridToMcfunction(box(3, "stone"));
+    expect(violations).toHaveLength(0);
+    expect(Buffer.isBuffer(writeStructureNbt(pyramid(3, "stone")))).toBe(true);
   });
 });
