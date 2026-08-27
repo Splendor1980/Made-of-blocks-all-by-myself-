@@ -204,20 +204,16 @@ async function init() {
 }
 
 async function initWorlds() {
-  const gate = await api.getGateStatus().catch(() => null);
-  const locked = !gate || !gate.passed;
   const lockedEl = document.getElementById("worldsLocked");
   const controls = document.getElementById("worldsControls");
-  if (locked) {
-    controls.style.display = "none";
-    lockedEl.style.display = "block";
-    document.getElementById("worldsGate").textContent = gate
-      ? `launches ${gate.launches}/${gate.thresholds.launches}, png ${gate.png}/${gate.thresholds.png}, returns ${gate.returns}/${gate.thresholds.returns}`
-      : "status unavailable";
-    return;
-  }
   lockedEl.style.display = "none";
   controls.style.display = "block";
+  const gate = await api.getGateStatus().catch(() => null);
+  if (gate) {
+    document.getElementById("worldsGate") &&
+      (document.getElementById("worldsGate").textContent =
+        `Gate 0: launches ${gate.launches}/${gate.thresholds.launches}, png ${gate.png}/${gate.thresholds.png}, returns ${gate.returns}/${gate.thresholds.returns}`);
+  }
   document.getElementById("worldGen").onclick = async () => {
     const type = document.getElementById("worldType").value;
     const block = document.getElementById("worldBlock").value;

@@ -2,7 +2,6 @@
 description: Deterministic Minecraft builds (.mcfunction/.nbt) and textureless datapacks. Security-scanned. GATED — enable only after skins Gate 0 metrics.
 model: anthropic/claude-sonnet-4
 mode: subagent
-disable: true
 permission:
   "tool:build_mcfunction": allow
   "tool:build_nbt": allow
