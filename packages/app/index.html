@@ -73,8 +73,20 @@
             <label>Size <input id="worldSize" type="number" min="1" max="32" value="5" style="width:56px" /></label>
             <label>Out <input id="worldOut" value="out/world" style="width:120px" /></label>
           </div>
-          <div><button id="worldGen">Generate datapack</button></div>
+          <div class="row">
+            <em>Presets:</em>
+            <button class="preset" data-type="house" data-size="6" data-block="minecraft:oak_planks">House</button>
+            <button class="preset" data-type="tower" data-size="8" data-block="minecraft:stone_bricks">Tower</button>
+            <button class="preset" data-type="pyramid" data-size="5" data-block="minecraft:sandstone">Pyramid</button>
+            <button class="preset" data-type="wall" data-size="9" data-block="minecraft:brick">Wall</button>
+          </div>
+          <div class="row">
+            <button id="worldGen">Generate datapack</button>
+            <button id="worldOpen" style="display:none">Open folder</button>
+            <span id="worldStatus" style="font-size:12px;opacity:.8"></span>
+          </div>
           <pre id="worldResult" style="white-space:pre-wrap;font-size:12px"></pre>
+          <div id="worldList" style="font-size:12px"></div>
         </div>
       </div>
     </div>

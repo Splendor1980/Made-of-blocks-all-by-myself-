@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import { join } from "node:path";
 import { writeFile, readdir, readFile, mkdir } from "node:fs/promises";
 import {
@@ -156,6 +156,15 @@ ipcMain.handle(
     return { files, command: `/function genmod:build_${type}`, structureId, outDir };
   },
 );
+
+ipcMain.handle("openPath", async (_e, { path }) => {
+  try {
+    await shell.openPath(path);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: (err && err.message) || String(err) };
+  }
+});
 
 app.whenReady().then(async () => {
   await metrics.recordLaunch();

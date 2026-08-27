@@ -14,4 +14,5 @@ contextBridge.exposeInMainWorld("mcApi", {
   startSidecar: () => ipcRenderer.invoke("startSidecar"),
   getGateStatus: () => ipcRenderer.invoke("getGateStatus"),
   generateWorld: (opts) => ipcRenderer.invoke("generateWorld", opts),
+  openPath: (path) => ipcRenderer.invoke("openPath", { path }),
 });

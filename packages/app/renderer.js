@@ -214,25 +214,48 @@ async function initWorlds() {
       (document.getElementById("worldsGate").textContent =
         `Gate 0: launches ${gate.launches}/${gate.thresholds.launches}, png ${gate.png}/${gate.thresholds.png}, returns ${gate.returns}/${gate.thresholds.returns}`);
   }
-  document.getElementById("worldGen").onclick = async () => {
-    const type = document.getElementById("worldType").value;
-    const block = document.getElementById("worldBlock").value;
-    const size = parseInt(document.getElementById("worldSize").value, 10) || 5;
-    const out = document.getElementById("worldOut").value;
-    const res = await api
-      .generateWorld({ type, block, size, out })
-      .catch((e) => ({ error: (e && e.message) || String(e) }));
-    const el = document.getElementById("worldResult");
-    if (res.error) {
-      el.textContent = "Error: " + res.error;
-      return;
-    }
-    el.textContent =
-      `Generated ${type} (${block}, size ${size})\n` +
-      `In-game: ${res.command}\n` +
-      `Drop folder into saves/<world>/datapacks/ :\n` +
-      res.files.map((f) => "  " + f).join("\n");
-  };
+  document.getElementById("worldGen").onclick = () => generateWorld();
+
+  document.querySelectorAll(".preset").forEach((btn) => {
+    btn.onclick = () => {
+      document.getElementById("worldType").value = btn.dataset.type;
+      document.getElementById("worldBlock").value = btn.dataset.block;
+      document.getElementById("worldSize").value = btn.dataset.size;
+      generateWorld();
+    };
+  });
+}
+
+async function generateWorld() {
+  const type = document.getElementById("worldType").value;
+  const block = document.getElementById("worldBlock").value;
+  const size = parseInt(document.getElementById("worldSize").value, 10) || 5;
+  const out = document.getElementById("worldOut").value;
+  const status = document.getElementById("worldStatus");
+  const el = document.getElementById("worldResult");
+  const openBtn = document.getElementById("worldOpen");
+  status.textContent = "Generating…";
+  openBtn.style.display = "none";
+  const res = await api
+    .generateWorld({ type, block, size, out })
+    .catch((e) => ({ error: (e && e.message) || String(e) }));
+  if (res.error) {
+    status.textContent = "";
+    el.textContent = "Error: " + res.error;
+    return;
+  }
+  status.textContent = "Done.";
+  el.textContent =
+    `Generated ${type} (${block}, size ${size})\n` +
+    `In-game: ${res.command}\n` +
+    `Drop folder into saves/<world>/datapacks/ :\n` +
+    res.files.map((f) => "  " + f).join("\n");
+  openBtn.style.display = "inline-block";
+  openBtn.onclick = () => api.openPath(res.outDir);
+  const list = document.getElementById("worldList");
+  const item = document.createElement("div");
+  item.textContent = `• ${type} (${size}) → ${res.command}`;
+  list.prepend(item);
 }
 
 init();
