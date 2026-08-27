@@ -25,7 +25,7 @@ OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins
 The Skin Studio buttons work **without** any model/Desktop (deterministic). The agent chat reports "unavailable" if no provider is configured.
 
 ## Gate 0 (skins → crafter)
-`crafter` stays disabled until metrics hit ≥20 launches, ≥10 PNG, ≥5 returns (distinct days). `node scripts/gate-switch.mjs` auto-removes `disable: true` and logs to `docs/gate-log.md`. Thresholds are fixed; metrics are never faked.
+`crafter` stays disabled until metrics hit ≥20 launches, ≥10 PNG, ≥5 returns (distinct days). `gate-switch.mjs` runs automatically on every UI/CLI launch (and can be run manually) to auto-remove `disable: true` and log to `docs/gate-log.md`. Thresholds are fixed; metrics are never faked.
 
 ## Notes
 - Don't fork OpenCode; extend via agents/tools/permissions in `.opencode/`.
