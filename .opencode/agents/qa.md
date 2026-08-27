@@ -14,7 +14,7 @@ Workflow:
 1. Run `npm test` (vitest) and `npm run typecheck` (`tsc -b`). If a `qa` script exists, run `npm run qa` instead.
 2. If anything fails, read the failing output, locate the root cause in the source, and fix it.
 3. Re-run until green. Summarize readiness: pass/fail counts and what you changed.
-4. Headless smoke check (no display needed): run the CLI pipeline and confirm artifacts are produced —
+4. Headless smoke check (no display needed): run `npm run smoke` (or the CLI pipeline directly) and confirm artifacts are produced —
    `node scripts/generate-world.mjs --type sphere --size 5 --out out/qa`,
    `node scripts/make-examples.mjs`,
    `node scripts/skin-cli.mjs list`.
