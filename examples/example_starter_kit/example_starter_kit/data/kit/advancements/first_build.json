@@ -1,0 +1,14 @@
+{
+  "display": {
+    "title": "First Build",
+    "description": "You placed a demo structure.",
+    "icon": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "criteria": {
+    "trigger": {
+      "trigger": "minecraft:placed_block"
+    }
+  }
+}

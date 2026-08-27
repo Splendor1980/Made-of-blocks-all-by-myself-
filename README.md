@@ -34,7 +34,9 @@ The Skin Studio buttons work **without** any model/Desktop (deterministic). The 
 A **Worlds** panel exists in the Skin Studio UI but is **locked until Gate 0 passes** (it shows the current metrics instead). When enabled it calls `generateWorld` and writes a datapack folder; no writes to existing saves happen automatically.
 Headless equivalent (independent of the gate): `node scripts/generate-world.mjs --type <house|box|tower|pyramid|fence|wall> --block <id> --size <n> --out <dir>`.
 Output is a **folder** (not a zip), e.g. `out/world/pack.mcmeta` + `data/genmod/structures/<type>_<size>.nbt` + `data/genmod/functions/build_<type>.mcfunction`. Copy that folder into `saves/<world>/datapacks/`, then run `/function genmod:build_<type>` in-game.
-The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `build_nbt` for the same result from chat. The `crafter` subagent (`.opencode/agents/crafter.md`, now enabled) uses it: just ask the OpenCode agent to "build a pyramid world" and it calls `generate_world`.
+The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `build_nbt` for the same result from chat. The higher-level `craft_datapack` tool builds a full datapack in one call — an optional embedded `.nbt` structure **plus** recipes, advancements, loot tables and functions. The `crafter` subagent (`.opencode/agents/crafter.md`, now enabled) uses them: just ask the OpenCode agent to "build a pyramid world" or "make a starter kit with a recipe".
+
+**Example gallery:** `node scripts/make-examples.mjs` generates ready-to-use datapacks into `examples/` (house, pyramid, tower, and a `example_starter_kit` with a recipe + advancement + loot + function). Copy any `examples/<name>` folder into `saves/<world>/datapacks/`.
 
 
 ## Notes
