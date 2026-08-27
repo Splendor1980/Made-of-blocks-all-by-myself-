@@ -2,13 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';" />
     <title>mc-agent — Skin Studio</title>
     <style>
       body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #14181f; color: #e6e6e6; }
       h1 { font-size: 18px; }
       .layout { display: flex; gap: 16px; align-items: flex-start; }
       .panel { background: #1d232d; padding: 12px; border-radius: 8px; }
+      canvas#preview { width: 320px; height: 420px; background: #222; border: 1px solid #333; border-radius: 8px; }
       img.preview { image-rendering: pixelated; width: 256px; height: 256px; background: #333; border: 1px solid #333; }
       button { background: #2b3a4a; color: #fff; border: 0; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin: 2px; }
       button:hover { background: #36506a; }
@@ -22,12 +23,13 @@
   <body>
     <h1>mc-agent — Skin Studio (deterministic, Stage 1)</h1>
     <div class="layout">
-      <div class="panel">
-        <img id="preview" class="preview" alt="skin preview" />
-        <div id="templateName"></div>
-        <div><button id="export">Export PNG</button></div>
-        <div id="metrics">metrics: …</div>
-      </div>
+       <div class="panel">
+         <canvas id="preview" class="preview" alt="skin preview"></canvas>
+         <div id="templateName"></div>
+         <div><em>Drag to rotate the 3D preview.</em></div>
+         <div><button id="export">Export PNG</button></div>
+         <div id="metrics">metrics: …</div>
+       </div>
       <div class="panel">
         <p><strong>Templates</strong> (from <code>assets/templates</code>):</p>
         <div id="templates"></div>
@@ -37,6 +39,7 @@
         <p><em>No AI pixels in Stage 1. LLM assist (Stage 2) arrives via the OpenCode sidecar agent.</em></p>
       </div>
     </div>
+    <script src="../../node_modules/skinview3d/bundles/skinview3d.bundle.js"></script>
     <script src="./renderer.js"></script>
   </body>
 </html>

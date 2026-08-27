@@ -9,10 +9,37 @@ const PARTS = [
   { key: "leftLeg", label: "Left Leg" },
 ];
 
-let current = { templateId: null, colors: {}, imported: null };
+let current = { templateId: null, colors: {}, imported: null, skinUrl: null };
+let viewer = null;
+let using3D = true;
+
+function initViewer() {
+  const canvas = document.getElementById("preview");
+  try {
+    if (!window.skinview3d) throw new Error("skinview3d bundle not loaded");
+    viewer = new window.skinview3d.SkinViewer({ canvas, width: 320, height: 420 });
+    viewer.animation = new window.skinview3d.IdleAnimation();
+    viewer.controls.enableRotate = true;
+    viewer.controls.enableZoom = false;
+    console.log("3D preview ready");
+  } catch (e) {
+    using3D = false;
+    const img = document.createElement("img");
+    img.id = "preview";
+    img.className = "preview";
+    canvas.replaceWith(img);
+    console.warn("3D preview unavailable, falling back to 2D:", e.message);
+  }
+}
 
 function setPreview(url) {
-  document.getElementById("preview").src = url;
+  current.skinUrl = url;
+  if (!using3D || !viewer) {
+    const el = document.getElementById("preview");
+    if (el) el.src = url;
+    return;
+  }
+  viewer.loadSkin(url).catch((err) => console.warn("loadSkin failed:", err));
 }
 
 async function recolor() {
@@ -31,6 +58,7 @@ async function selectTemplate(id) {
 }
 
 async function init() {
+  initViewer();
   const templates = await api.listTemplates();
   const host = document.getElementById("templates");
   host.innerHTML = "";
@@ -87,7 +115,7 @@ async function init() {
   };
 
   document.getElementById("export").onclick = async () => {
-    const url = document.getElementById("preview").src;
+    const url = current.skinUrl || document.getElementById("preview").src;
     const res = await api.export(url);
     if (res.ok) alert("Saved: " + res.path);
   };

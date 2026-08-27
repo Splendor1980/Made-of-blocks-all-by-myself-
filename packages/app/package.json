@@ -10,5 +10,8 @@
   },
   "devDependencies": {
     "electron": "^33.0.0"
+  },
+  "dependencies": {
+    "skinview3d": "^3.4.2"
   }
 }

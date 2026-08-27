@@ -46,7 +46,7 @@ function createWindow() {
     width: 960,
     height: 680,
     webPreferences: {
-      preload: join(import.meta.dirname, "preload.js"),
+      preload: join(import.meta.dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
     },

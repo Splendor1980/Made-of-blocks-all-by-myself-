@@ -8,3 +8,4 @@ The script enables the `crafter` agent (removes `disable: true` from
 (>=20 launches, >=10 png, >=5 returns). On FAIL it makes no changes.
 
 ---
+- 2026-08-26T18:38:24.042Z | launches=2 png=1 returns=0 passed=false -> no change: thresholds not met (need >=20 launches, >=10 png, >=5 returns)
