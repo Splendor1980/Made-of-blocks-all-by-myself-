@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { readFile } from "node:fs/promises";
 import { tool } from "@opencode-ai/plugin";
 import { createDatapack } from "@mc-agent/core";
 
@@ -25,6 +26,10 @@ export default tool({
       .array(tool.schema.object({ id: tool.schema.string(), pools: tool.schema.array(tool.schema.object({ entries: tool.schema.array(tool.schema.string()), rolls: tool.schema.number().optional() })) }))
       .optional(),
     structures: tool.schema.array(tool.schema.string()).optional().describe("Structure ids (.nbt produced elsewhere)."),
+    embeddedStructures: tool.schema
+      .array(tool.schema.object({ id: tool.schema.string(), nbtPath: tool.schema.string() }))
+      .optional()
+      .describe("Embed real .nbt files (produced by build_nbt) into the pack as placeable structures."),
     output: tool.schema.string().describe("Output directory, relative to project root."),
   },
   async execute(input, ctx) {
@@ -42,6 +47,10 @@ export default tool({
     for (const a of input.advancements ?? []) dp.addAdvancement(a);
     for (const l of input.loot ?? []) dp.addLootTable(l);
     for (const s of input.structures ?? []) dp.addStructureRef(s);
+    for (const e of input.embeddedStructures ?? []) {
+      const buf = await readFile(join(ctx.worktree, e.nbtPath));
+      dp.addStructure(e.id, buf);
+    }
 
     const v = dp.validate();
     if (!v.valid) return JSON.stringify({ valid: false, errors: v.errors });

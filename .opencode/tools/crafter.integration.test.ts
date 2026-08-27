@@ -80,4 +80,29 @@ describe("crafter agent tools", () => {
     expect(res.valid).toBe(true);
     expect(res.files.some((f: string) => f.endsWith("pack.mcmeta"))).toBe(true);
   });
+
+  it("datapack_create embeds a real .nbt structure produced by build_nbt", async () => {
+    const nbtRes = JSON.parse(
+      (await buildNbt.execute(
+        { size: [1, 1, 1], voxels: [{ x: 0, y: 0, z: 0, id: "minecraft:gold_block" }], output: "out/embedded.nbt" },
+        ctx,
+      )) as string,
+    );
+    expect(nbtRes.bytes).toBeGreaterThan(0);
+    const dpRes = JSON.parse(
+      (await datapackCreate.execute(
+        {
+          name: "with_struct",
+          namespace: "demo2",
+          embeddedStructures: [{ id: "shrine", nbtPath: "out/embedded.nbt" }],
+          functions: [{ id: "place", commands: ["structure load demo2:shrine ~ ~ ~"] }],
+          output: "out/dp_embed",
+        },
+        ctx,
+      )) as string,
+    );
+    expect(dpRes.valid).toBe(true);
+    const norm = (f: string) => f.replace(/[\\/]/g, "/");
+    expect(dpRes.files.some((f: string) => norm(f).endsWith("data/demo2/structures/shrine.nbt"))).toBe(true);
+  });
 });
