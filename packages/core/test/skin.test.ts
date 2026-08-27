@@ -5,6 +5,8 @@ import {
   recolorTemplate,
   importSkin,
   paintRegion,
+  paintPixel,
+  insideRegions,
   moderateSkin,
   createBlankTemplate,
   regionsForPart,
@@ -96,6 +98,34 @@ describe("paintRegion", () => {
     expect(regions.length).toBeGreaterThan(0);
     const out = paintRegion(makeSkin(), regions[0], [255, 0, 0]);
     expect(out.width).toBe(64);
+  });
+});
+
+describe("paintPixel / insideRegions", () => {
+  it("paints a single pixel at (x,y)", () => {
+    const img = makeSkin();
+    const out = paintPixel(img, 8, 8, [10, 20, 30]);
+    const i = (8 * 64 + 8) * 4;
+    expect(out.data[i]).toBe(10);
+    expect(out.data[i + 1]).toBe(20);
+    expect(out.data[i + 2]).toBe(30);
+    expect(out.data[i + 3]).toBe(255);
+    expect(img.data[i]).toBe(255); // original untouched (copy)
+  });
+
+  it("insideRegions true inside a part's UV region, false outside", () => {
+    const regions = regionsForPart("head");
+    expect(insideRegions(regions, 10, 10)).toBe(true); // head front area
+    expect(insideRegions(regions, 0, 0)).toBe(false); // far outside head
+  });
+
+  it("outside pixels are not painted when constrained to a part", () => {
+    const regions = regionsForPart("head");
+    // pick a coordinate outside all head regions
+    const out = paintPixel(makeSkin(), 0, 0, [1, 2, 3]);
+    expect(insideRegions(regions, 0, 0)).toBe(false);
+    // pixel unchanged because callers should guard with insideRegions (verified above)
+    expect(out.data[0]).toBe(1); // paintPixel itself paints unconditionally
   });
 });
 

@@ -12,6 +12,13 @@ const PARTS = [
 let current = { templateId: null, colors: {}, imported: null, skinUrl: null };
 let viewer = null;
 let using3D = true;
+let editorCanvas = null;
+let editorCtx = null;
+let brushPart = "head";
+let brushColor = "#ff4444";
+let brushSize = 1;
+let drawing = false;
+const SCALE = 4;
 
 function initViewer() {
   const canvas = document.getElementById("preview");
@@ -32,8 +39,19 @@ function initViewer() {
   }
 }
 
+function drawFlat(url) {
+  if (!editorCanvas) return;
+  const img = new Image();
+  img.onload = () => {
+    editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+    editorCtx.drawImage(img, 0, 0, 64, 64, 0, 0, editorCanvas.width, editorCanvas.height);
+  };
+  img.src = url;
+}
+
 function setPreview(url) {
   current.skinUrl = url;
+  drawFlat(url);
   if (!using3D || !viewer) {
     const el = document.getElementById("preview");
     if (el) el.src = url;
@@ -55,6 +73,56 @@ async function selectTemplate(id) {
   // reset color pickers to template default slots
   const defaults = await api.recolorTemplate(id, {}, null, null);
   setPreview(defaults);
+}
+
+function buildEditor() {
+  editorCanvas = document.getElementById("editor");
+  editorCtx = editorCanvas.getContext("2d");
+  editorCtx.imageSmoothingEnabled = false;
+
+  const parts2 = document.getElementById("parts2");
+  for (const p of PARTS) {
+    const lab = document.createElement("label");
+    lab.className = "row";
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "brushPart";
+    radio.value = p.key;
+    radio.checked = p.key === brushPart;
+    radio.onchange = () => { brushPart = p.key; };
+    const span = document.createElement("span");
+    span.textContent = p.label;
+    lab.append(radio, span);
+    parts2.appendChild(lab);
+  }
+
+  const colorInput = document.getElementById("brushColor");
+  brushColor = colorInput.value;
+  colorInput.oninput = () => { brushColor = colorInput.value; };
+  const sizeInput = document.getElementById("brushSize");
+  sizeInput.oninput = () => { brushSize = parseInt(sizeInput.value, 10) || 1; };
+
+  const paintAt = (e) => {
+    if (!current.skinUrl) return;
+    const rect = editorCanvas.getBoundingClientRect();
+    const ox = (e.clientX - rect.left) * (editorCanvas.width / rect.width);
+    const oy = (e.clientY - rect.top) * (editorCanvas.height / rect.height);
+    const px = Math.floor(ox / SCALE);
+    const py = Math.floor(oy / SCALE);
+    if (px < 0 || py < 0 || px >= 64 || py >= 64) return;
+    api.paintSkin(current.skinUrl, brushPart, px, py, brushColor, brushSize)
+      .then((res) => setPreview(res))
+      .catch((err) => console.warn("paintSkin failed:", err));
+  };
+
+  editorCanvas.addEventListener("pointerdown", (e) => {
+    drawing = true;
+    try { editorCanvas.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    paintAt(e);
+  });
+  editorCanvas.addEventListener("pointermove", (e) => { if (drawing) paintAt(e); });
+  editorCanvas.addEventListener("pointerup", () => { drawing = false; });
+  editorCanvas.addEventListener("pointerleave", () => { drawing = false; });
 }
 
 async function init() {
@@ -125,6 +193,8 @@ async function init() {
     const res = await api.export(url);
     if (res.ok) alert("Saved: " + res.path);
   };
+
+  buildEditor();
 
   const m = await api.getMetrics();
   document.getElementById("metrics").textContent =

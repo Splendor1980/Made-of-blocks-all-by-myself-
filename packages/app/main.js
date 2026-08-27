@@ -5,10 +5,13 @@ import {
   loadTemplate,
   recolorTemplate,
   recolorPart,
-  encodePng,
   validateSkin,
   decodePng,
+  encodePng,
   importSkin,
+  paintPixel,
+  insideRegions,
+  regionsForPart,
 } from "@mc-agent/core";
 import { startSidecar, stopSidecar, sidecarState } from "./sidecar.js";
 import * as metrics from "./metrics.js";
@@ -68,6 +71,24 @@ ipcMain.handle("importSkin", async (_e, { dataUrl }) => {
   return { model, dataUrl: `data:image/png;base64,${encodePng(img).toString("base64")}` };
 });
 ipcMain.handle("getMetrics", () => metrics.get());
+ipcMain.handle("partRegions", (_e, { part }) => regionsForPart(part));
+ipcMain.handle("paintSkin", async (_e, { dataUrl, part, x, y, color, size }) => {
+  const b64 = dataUrl.replace(/^data:image\/[a-z]+;base64,/, "");
+  const img = decodePng(Buffer.from(b64, "base64"));
+  const regions = regionsForPart(part);
+  const parsed = parseInt(color.replace("#", ""), 16);
+  const rgb = [(parsed >> 16) & 255, (parsed >> 8) & 255, parsed & 255];
+  const s = size && size > 0 ? size : 1;
+  let out = img;
+  for (let dy = 0; dy < s; dy++) {
+    for (let dx = 0; dx < s; dx++) {
+      const px = x + dx;
+      const py = y + dy;
+      if (insideRegions(regions, px, py)) out = paintPixel(out, px, py, rgb);
+    }
+  }
+  return `data:image/png;base64,${encodePng(out).toString("base64")}`;
+});
 ipcMain.handle("export", async (_e, { dataUrl }) => {
   const out = await dialog.showSaveDialog({
     defaultPath: "skin.png",

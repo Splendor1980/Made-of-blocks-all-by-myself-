@@ -1,0 +1,37 @@
+{
+  "id": "mage",
+  "displayName": "Mage",
+  "model": "classic",
+  "slots": [
+    {
+      "name": "head",
+      "defaultColor": "#d9b38c",
+      "keyColor": "#101010"
+    },
+    {
+      "name": "torso",
+      "defaultColor": "#5b2a83",
+      "keyColor": "#202020"
+    },
+    {
+      "name": "rightArm",
+      "defaultColor": "#5b2a83",
+      "keyColor": "#303030"
+    },
+    {
+      "name": "leftArm",
+      "defaultColor": "#5b2a83",
+      "keyColor": "#404040"
+    },
+    {
+      "name": "rightLeg",
+      "defaultColor": "#2b2b2b",
+      "keyColor": "#505050"
+    },
+    {
+      "name": "leftLeg",
+      "defaultColor": "#2b2b2b",
+      "keyColor": "#606060"
+    }
+  ]
+}

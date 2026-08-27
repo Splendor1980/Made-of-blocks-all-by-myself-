@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { writeFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import {
@@ -14,7 +14,13 @@ import * as metrics from "../packages/app/metricsStore.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const assets = join(here, "..", "assets", "templates");
 
-const templateIds = ["knight"];
+async function listTemplateIds() {
+  const files = await readdir(assets);
+  return files
+    .filter((f) => f.endsWith(".slots.json"))
+    .map((f) => f.replace(/\.slots\.json$/, ""))
+    .sort();
+}
 
 function parseArgs(argv) {
   const out = { cmd: argv[2] || "list", id: argv[3], color: argv[4], part: null, write: false, out: "out/skin-cli.png" };
@@ -31,7 +37,8 @@ async function main() {
   await metrics.recordLaunch();
 
   if (args.cmd === "list") {
-    console.log("templates: " + templateIds.join(", "));
+    const ids = await listTemplateIds();
+    console.log("templates: " + ids.join(", "));
     return;
   }
 

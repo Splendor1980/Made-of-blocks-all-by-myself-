@@ -11,6 +11,7 @@
       .panel { background: #1d232d; padding: 12px; border-radius: 8px; }
       canvas#preview { width: 320px; height: 420px; background: #222; border: 1px solid #333; border-radius: 8px; }
       img.preview { image-rendering: pixelated; width: 256px; height: 256px; background: #333; border: 1px solid #333; }
+      canvas.editor { image-rendering: pixelated; width: 256px; height: 256px; background: #333; border: 1px solid #333; border-radius: 6px; cursor: crosshair; }
       button { background: #2b3a4a; color: #fff; border: 0; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin: 2px; }
       button:hover { background: #36506a; }
       .card { display: inline-block; }
@@ -38,6 +39,16 @@
         <p><strong>Recolor parts:</strong></p>
         <div id="parts"></div>
         <p><em>No AI pixels in Stage 1. LLM assist (Stage 2) arrives via the OpenCode sidecar agent.</em></p>
+      </div>
+      <div class="panel">
+        <p><strong>Edit — paint regions:</strong></p>
+        <div id="parts2"></div>
+        <div class="row">
+          <label>Brush <input type="color" id="brushColor" value="#ff4444" /></label>
+          <label>Size <input type="number" id="brushSize" min="1" max="4" value="1" style="width: 52px" /></label>
+        </div>
+        <canvas id="editor" width="256" height="256" class="editor"></canvas>
+        <p><em>Click / drag on a body part to paint. Brush is limited to the selected part's UV region.</em></p>
       </div>
     </div>
     <script src="../../node_modules/skinview3d/bundles/skinview3d.bundle.js"></script>

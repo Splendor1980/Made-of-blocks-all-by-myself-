@@ -7,6 +7,7 @@ permission:
   "tool:recolor_template": allow
   "tool:import_skin": allow
   "tool:edit_skin_region": allow
+  "tool:open_skin_studio": allow
   read: allow
   write: allow
   bash: deny
