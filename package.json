@@ -8,6 +8,9 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "npm run build --workspace @mc-agent/core",
+    "build:core": "npm run build --workspace @mc-agent/core",
+    "prepare": "npm run build --workspace @mc-agent/core",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -b"
