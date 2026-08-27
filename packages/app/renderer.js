@@ -199,6 +199,44 @@ async function init() {
   const m = await api.getMetrics();
   document.getElementById("metrics").textContent =
     `launches: ${m.launches} · png: ${m.png} · returns: ${m.returns}`;
+
+  initWorlds();
+}
+
+async function initWorlds() {
+  const gate = await api.getGateStatus().catch(() => null);
+  const locked = !gate || !gate.passed;
+  const lockedEl = document.getElementById("worldsLocked");
+  const controls = document.getElementById("worldsControls");
+  if (locked) {
+    controls.style.display = "none";
+    lockedEl.style.display = "block";
+    document.getElementById("worldsGate").textContent = gate
+      ? `launches ${gate.launches}/${gate.thresholds.launches}, png ${gate.png}/${gate.thresholds.png}, returns ${gate.returns}/${gate.thresholds.returns}`
+      : "status unavailable";
+    return;
+  }
+  lockedEl.style.display = "none";
+  controls.style.display = "block";
+  document.getElementById("worldGen").onclick = async () => {
+    const type = document.getElementById("worldType").value;
+    const block = document.getElementById("worldBlock").value;
+    const size = parseInt(document.getElementById("worldSize").value, 10) || 5;
+    const out = document.getElementById("worldOut").value;
+    const res = await api
+      .generateWorld({ type, block, size, out })
+      .catch((e) => ({ error: (e && e.message) || String(e) }));
+    const el = document.getElementById("worldResult");
+    if (res.error) {
+      el.textContent = "Error: " + res.error;
+      return;
+    }
+    el.textContent =
+      `Generated ${type} (${block}, size ${size})\n` +
+      `In-game: ${res.command}\n` +
+      `Drop folder into saves/<world>/datapacks/ :\n` +
+      res.files.map((f) => "  " + f).join("\n");
+  };
 }
 
 init();

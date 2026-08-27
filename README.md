@@ -16,16 +16,26 @@ OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins
 ## Quick start
 1. **Open this folder (`mc-agent`) in OpenCode Desktop.** Agents and tools are picked up from `.opencode/` automatically.
 2. **Skin Studio window** (companion UI), any of:
-   - `cd packages/app && npm install && npm start`
+   - double-click the **`mc-agent Skin Studio`** shortcut on the Desktop (runs `launch-skin-studio.bat`),
+   - `cd packages/app && npm install && npm start`,
    - or ask the `skins` agent to open it (`open_skin_studio` tool).
    > The Electron binary must be present in `node_modules/electron/dist` (downloaded by `npm install` on a normal network; see `docs/blockers.md` if it's missing).
-3. **Headless / CLI only:** `node scripts/skin-cli.mjs list`, then `node scripts/skin-cli.mjs run <id> <hexcolor> [part] --write --out out/skin.png`.
+3. **Headless / CLI only:**
+   - skins: `node scripts/skin-cli.mjs list`, then `node scripts/skin-cli.mjs run <id> <hexcolor> [part] --write --out out/skin.png`
+   - worlds: `node scripts/generate-world.mjs --type pyramid --size 3 --out out/world`
 
 ## Graceful degradation
 The Skin Studio buttons work **without** any model/Desktop (deterministic). The agent chat reports "unavailable" if no provider is configured.
 
 ## Gate 0 (skins → crafter)
 `crafter` stays disabled until metrics hit ≥20 launches, ≥10 PNG, ≥5 returns (distinct days). `gate-switch.mjs` runs automatically on every UI/CLI launch (and can be run manually) to auto-remove `disable: true` and log to `docs/gate-log.md`. Thresholds are fixed; metrics are never faked.
+
+## Worlds (datapacks / structures)
+A **Worlds** panel exists in the Skin Studio UI but is **locked until Gate 0 passes** (it shows the current metrics instead). When enabled it calls `generateWorld` and writes a datapack folder; no writes to existing saves happen automatically.
+Headless equivalent (independent of the gate): `node scripts/generate-world.mjs --type <house|box|tower|pyramid|fence|wall> --block <id> --size <n> --out <dir>`.
+Output is a **folder** (not a zip), e.g. `out/world/pack.mcmeta` + `data/genmod/structures/<type>_<size>.nbt` + `data/genmod/functions/build_<type>.mcfunction`. Copy that folder into `saves/<world>/datapacks/`, then run `/function genmod:build_<type>` in-game.
+The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `build_nbt` for the same result from chat.
+
 
 ## Notes
 - Don't fork OpenCode; extend via agents/tools/permissions in `.opencode/`.

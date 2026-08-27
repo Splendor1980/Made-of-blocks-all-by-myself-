@@ -12,4 +12,6 @@ contextBridge.exposeInMainWorld("mcApi", {
     ipcRenderer.invoke("paintSkin", { dataUrl, part, x, y, color, size }),
   sidecarStatus: () => ipcRenderer.invoke("sidecarStatus"),
   startSidecar: () => ipcRenderer.invoke("startSidecar"),
+  getGateStatus: () => ipcRenderer.invoke("getGateStatus"),
+  generateWorld: (opts) => ipcRenderer.invoke("generateWorld", opts),
 });

@@ -50,6 +50,33 @@
         <canvas id="editor" width="256" height="256" class="editor"></canvas>
         <p><em>Click / drag on a body part to paint. Brush is limited to the selected part's UV region.</em></p>
       </div>
+      <div class="panel" id="worldsPanel">
+        <p><strong>Worlds</strong> (datapacks &amp; structures):</p>
+        <div id="worldsLocked" style="color:#ffcf8a;display:none">
+          Locked until Gate 0 (skins) passes. Metrics: <span id="worldsGate"></span>
+        </div>
+        <div id="worldsControls">
+          <div class="row">
+            <label>Type
+              <select id="worldType">
+                <option value="house">house</option>
+                <option value="box">box</option>
+                <option value="tower">tower</option>
+                <option value="pyramid">pyramid</option>
+                <option value="fence">fence</option>
+                <option value="wall">wall</option>
+              </select>
+            </label>
+            <label>Block <input id="worldBlock" value="minecraft:oak_planks" style="width:140px" /></label>
+          </div>
+          <div class="row">
+            <label>Size <input id="worldSize" type="number" min="1" max="32" value="5" style="width:56px" /></label>
+            <label>Out <input id="worldOut" value="out/world" style="width:120px" /></label>
+          </div>
+          <div><button id="worldGen">Generate datapack</button></div>
+          <pre id="worldResult" style="white-space:pre-wrap;font-size:12px"></pre>
+        </div>
+      </div>
     </div>
     <script src="../../node_modules/skinview3d/bundles/skinview3d.bundle.js"></script>
     <script src="./renderer.js"></script>

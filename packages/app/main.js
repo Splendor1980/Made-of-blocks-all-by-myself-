@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import { join } from "node:path";
-import { writeFile, readdir, readFile } from "node:fs/promises";
+import { writeFile, readdir, readFile, mkdir } from "node:fs/promises";
 import {
   loadTemplate,
   recolorTemplate,
@@ -12,12 +12,34 @@ import {
   paintPixel,
   insideRegions,
   regionsForPart,
+  createDatapack,
+  writeStructureNbt,
+  box,
+  pyramid,
+  wall,
 } from "@mc-agent/core";
 import { startSidecar, stopSidecar, sidecarState } from "./sidecar.js";
 import * as metrics from "./metrics.js";
 import { runGateSwitch } from "../../scripts/gate-switch.mjs";
 
 const TEMPLATES_DIR = join(import.meta.dirname, "..", "..", "assets", "templates");
+const REPO_ROOT = join(import.meta.dirname, "..", "..");
+
+function generateGrid(type, block, size) {
+  switch (type) {
+    case "house":
+    case "box":
+      return box(size, block, type !== "box");
+    case "tower":
+    case "pyramid":
+      return pyramid(size, block);
+    case "fence":
+    case "wall":
+      return wall(size, Math.max(2, Math.floor(size / 2)), block);
+    default:
+      throw new Error(`unknown type: ${type} (house|box|tower|pyramid|fence|wall)`);
+  }
+}
 
 async function templateList() {
   const files = await readdir(TEMPLATES_DIR).catch(() => []);
@@ -105,6 +127,35 @@ ipcMain.handle("startSidecar", () => {
   try { return startSidecar(); } catch { return { state: "error" }; }
 });
 ipcMain.handle("sidecarStatus", () => sidecarState());
+
+ipcMain.handle("getGateStatus", async () => {
+  const g = metrics.gateStatus(await metrics.load());
+  return { launches: g.launches, png: g.png, returns: g.returns, passed: g.passed, thresholds: g.thresholds };
+});
+
+ipcMain.handle(
+  "generateWorld",
+  async (_e, { type = "house", block = "minecraft:oak_planks", size = 5, out = "out/world" }) => {
+    const grid = generateGrid(type, block, size);
+    const structureId = `${type}_${size}`;
+    const dp = createDatapack({
+      name: "generated_pack",
+      namespace: "genmod",
+      description: `mc-agent ${type} (${block})`,
+    });
+    dp.addStructure(structureId, writeStructureNbt(grid));
+    dp.addFunction({
+      id: `build_${type}`,
+      commands: [`structure load genmod:${structureId} ~ ~ ~`, `say ${type} placed`],
+    });
+    const v = dp.validate();
+    if (!v.valid) throw new Error(v.errors.join("; "));
+    const outDir = join(REPO_ROOT, out);
+    await mkdir(outDir, { recursive: true });
+    const files = await dp.build(outDir);
+    return { files, command: `/function genmod:build_${type}`, structureId, outDir };
+  },
+);
 
 app.whenReady().then(async () => {
   await metrics.recordLaunch();
