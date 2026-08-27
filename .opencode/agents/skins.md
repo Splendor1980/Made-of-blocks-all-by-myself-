@@ -1,6 +1,5 @@
 ---
 description: Deterministic Minecraft skin generation (validate, recolor templates, import, edit regions). No AI pixels in Stage 1.
-model: anthropic/claude-sonnet-4
 mode: all
 permission:
   "tool:validate_skin": allow

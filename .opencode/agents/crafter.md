@@ -1,6 +1,5 @@
 ---
 description: Deterministic Minecraft builds (.mcfunction/.nbt) and textureless datapacks. Security-scanned. Operates only via provided tools.
-model: anthropic/claude-sonnet-4
 mode: subagent
 permission:
   "tool:build_mcfunction": allow
