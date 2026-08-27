@@ -2,6 +2,8 @@
 
 OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins first; datapacks/structures gated behind Gate 0). This repo is meant to be **opened as a folder in OpenCode Desktop** — Desktop provides the models and runs the agents/tools defined in `.opencode/`.
 
+**New here?** Read [GETTING_STARTED.md](./GETTING_STARTED.md) — a no-coding guide for players.
+
 ## What's inside
 - `.opencode/agents/` — `skins` (active), `crafter` (active; builds datapacks/structures).
 - `.opencode/tools/` — deterministic skin tools (validate, recolor, import, region-edit, open window) + datapack/build tools.
