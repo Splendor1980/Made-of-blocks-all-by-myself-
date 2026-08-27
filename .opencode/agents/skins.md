@@ -27,3 +27,7 @@ Workflow:
 5. Always return the written PNG path and a short human summary.
 
 Stay within the allowed tools. If asked for something outside them, say so.
+
+Status reporting: message the user rarely and keep updates to <=5 lines.
+Only report when state changes (file written, error, or a blocked request).
+Do not spam progress for every tool call.

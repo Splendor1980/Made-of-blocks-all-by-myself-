@@ -15,6 +15,7 @@ import {
 } from "@mc-agent/core";
 import { startSidecar, stopSidecar, sidecarState } from "./sidecar.js";
 import * as metrics from "./metrics.js";
+import { runGateSwitch } from "../../scripts/gate-switch.mjs";
 
 const TEMPLATES_DIR = join(import.meta.dirname, "..", "..", "assets", "templates");
 
@@ -108,6 +109,8 @@ ipcMain.handle("sidecarStatus", () => sidecarState());
 app.whenReady().then(async () => {
   await metrics.recordLaunch();
   try { startSidecar(); } catch { /* optional */ }
+  // Gate 0: if metrics now pass, auto-enable the crafter agent before the UI opens.
+  try { await runGateSwitch(); } catch (e) { console.warn("gate-switch failed:", e); }
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

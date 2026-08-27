@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createDatapack } from "../packages/core/dist/datapack/index.js";
 import { writeStructureNbt, box, pyramid, wall } from "../packages/core/dist/build/index.js";
+import { runGateSwitch } from "./gate-switch.mjs";
 
 function parseArgs(argv) {
   const o = {
@@ -42,6 +43,7 @@ function generateGrid(type, block, size) {
 
 async function main() {
   const o = parseArgs(process.argv);
+  try { await runGateSwitch(); } catch { /* non-fatal */ }
   const grid = generateGrid(o.type, o.block, o.size);
   const structureId = `${o.type}_${o.size}`;
   const dp = createDatapack({ name: o.name, namespace: o.namespace, description: `mc-agent ${o.type} (${o.block})` });

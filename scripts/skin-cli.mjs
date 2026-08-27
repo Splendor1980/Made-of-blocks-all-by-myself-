@@ -10,6 +10,7 @@ import {
   encodePng,
 } from "../packages/core/dist/skin/index.js";
 import * as metrics from "../packages/app/metricsStore.js";
+import { runGateSwitch } from "./gate-switch.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const assets = join(here, "..", "assets", "templates");
@@ -35,6 +36,7 @@ function parseArgs(argv) {
 async function main() {
   const args = parseArgs(process.argv);
   await metrics.recordLaunch();
+  try { await runGateSwitch(); } catch { /* non-fatal */ }
 
   if (args.cmd === "list") {
     const ids = await listTemplateIds();

@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createDatapack } from "../packages/core/dist/datapack/index.js";
 import { writeStructureNbt, box, pyramid, wall } from "../packages/core/dist/build/index.js";
+import { runGateSwitch } from "./gate-switch.mjs";
 
 function parseArgs(argv) {
   const out = { out: "out/datapack" };
@@ -13,6 +14,7 @@ function parseArgs(argv) {
 
 async function main() {
   const args = parseArgs(process.argv);
+  try { await runGateSwitch(); } catch { /* non-fatal */ }
 
   const dp = createDatapack({
     name: "demo_pack",
