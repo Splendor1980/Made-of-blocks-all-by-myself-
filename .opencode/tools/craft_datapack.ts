@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { tool } from "@opencode-ai/plugin";
-import { box, pyramid, wall, type VoxelGrid } from "@mc-agent/core";
+import { generateGrid, type VoxelGrid } from "@mc-agent/core";
 import buildNbt from "./build_nbt";
 import datapackCreate from "./datapack_create";
 
@@ -13,22 +13,6 @@ function gridToVoxels(g: VoxelGrid) {
         if (b) voxels.push({ x, y, z, id: b });
       }
   return voxels;
-}
-
-function generateGrid(type: string, block: string, size: number): VoxelGrid {
-  switch (type) {
-    case "house":
-    case "box":
-      return box(size, block, type !== "box");
-    case "tower":
-    case "pyramid":
-      return pyramid(size, block);
-    case "fence":
-    case "wall":
-      return wall(size, Math.max(2, Math.floor(size / 2)), block);
-    default:
-      throw new Error(`unknown type: ${type}`);
-  }
 }
 
 export default tool({

@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createDatapack } from "../packages/core/dist/datapack/index.js";
-import { writeStructureNbt, box, pyramid, wall } from "../packages/core/dist/build/index.js";
+import { writeStructureNbt, generateGrid } from "../packages/core/dist/build/index.js";
 import { runGateSwitch } from "./gate-switch.mjs";
 
 function parseArgs(argv) {
@@ -23,22 +23,6 @@ function parseArgs(argv) {
     else if (a === "--out") o.out = argv[++i];
   }
   return o;
-}
-
-function generateGrid(type, block, size) {
-  switch (type) {
-    case "house":
-    case "box":
-      return box(size, block, type !== "box");
-    case "tower":
-    case "pyramid":
-      return pyramid(size, block);
-    case "fence":
-    case "wall":
-      return wall(size, Math.max(2, Math.floor(size / 2)), block);
-    default:
-      throw new Error(`unknown type: ${type} (house|box|tower|pyramid|fence|wall)`);
-  }
 }
 
 async function main() {

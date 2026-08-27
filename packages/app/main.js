@@ -14,9 +14,7 @@ import {
   regionsForPart,
   createDatapack,
   writeStructureNbt,
-  box,
-  pyramid,
-  wall,
+  generateGrid,
 } from "@mc-agent/core";
 import { startSidecar, stopSidecar, sidecarState } from "./sidecar.js";
 import * as metrics from "./metrics.js";
@@ -24,22 +22,6 @@ import { runGateSwitch } from "../../scripts/gate-switch.mjs";
 
 const TEMPLATES_DIR = join(import.meta.dirname, "..", "..", "assets", "templates");
 const REPO_ROOT = join(import.meta.dirname, "..", "..");
-
-function generateGrid(type, block, size) {
-  switch (type) {
-    case "house":
-    case "box":
-      return box(size, block, type !== "box");
-    case "tower":
-    case "pyramid":
-      return pyramid(size, block);
-    case "fence":
-    case "wall":
-      return wall(size, Math.max(2, Math.floor(size / 2)), block);
-    default:
-      throw new Error(`unknown type: ${type} (house|box|tower|pyramid|fence|wall)`);
-  }
-}
 
 async function templateList() {
   const files = await readdir(TEMPLATES_DIR).catch(() => []);

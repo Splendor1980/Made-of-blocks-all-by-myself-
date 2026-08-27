@@ -42,3 +42,81 @@ export function wall(width: number, height: number, block: string): VoxelGrid {
     for (let x = 0; x < width; x++) blocks[idx(x, y, 0)] = block;
   return { width, height, depth, blocks };
 }
+
+/** A filled sphere of the given diameter (single block id). */
+export function sphere(diameter: number, block: string): VoxelGrid {
+  const d = Math.max(2, diameter);
+  const c = (d - 1) / 2;
+  const r = d / 2;
+  const blocks: (string | null)[] = new Array(d * d * d).fill(null);
+  const idx = (x: number, y: number, z: number) => (y * d + z) * d + x;
+  for (let y = 0; y < d; y++)
+    for (let z = 0; z < d; z++)
+      for (let x = 0; x < d; x++) {
+        const dx = x - c, dy = y - c, dz = z - c;
+        if (dx * dx + dy * dy + dz * dz <= r * r) blocks[idx(x, y, z)] = block;
+      }
+  return { width: d, height: d, depth: d, blocks };
+}
+
+/** Upper hemisphere (dome) of a sphere of the given diameter. */
+export function dome(diameter: number, block: string): VoxelGrid {
+  const d = Math.max(2, diameter);
+  const c = (d - 1) / 2;
+  const r = d / 2;
+  const blocks: (string | null)[] = new Array(d * d * d).fill(null);
+  const idx = (x: number, y: number, z: number) => (y * d + z) * d + x;
+  for (let y = 0; y < d; y++)
+    for (let z = 0; z < d; z++)
+      for (let x = 0; x < d; x++) {
+        if (y < c) continue; // only the upper half
+        const dx = x - c, dy = y - c, dz = z - c;
+        if (dx * dx + dy * dy + dz * dz <= r * r) blocks[idx(x, y, z)] = block;
+      }
+  return { width: d, height: d, depth: d, blocks };
+}
+
+/** A flat walkway: `width` (X) by `length` (Z), one block tall. */
+export function bridge(width: number, length: number, block: string): VoxelGrid {
+  const w = Math.max(2, width);
+  const l = Math.max(2, length);
+  const blocks: (string | null)[] = new Array(w * l * 1).fill(null);
+  const idx = (x: number, y: number, z: number) => (y * l + z) * w + x;
+  for (let z = 0; z < l; z++) for (let x = 0; x < w; x++) blocks[idx(x, 0, z)] = block;
+  return { width: w, height: 1, depth: l, blocks };
+}
+
+/** Ascending stairs: `width` (X) by `steps` (Y and Z). Step y spans Z 0..y. */
+export function stairs(width: number, steps: number, block: string): VoxelGrid {
+  const w = Math.max(1, width);
+  const s = Math.max(1, steps);
+  const blocks: (string | null)[] = new Array(w * s * s).fill(null);
+  const idx = (x: number, y: number, z: number) => (y * s + z) * w + x;
+  for (let y = 0; y < s; y++) for (let z = 0; z <= y; z++) for (let x = 0; x < w; x++) blocks[idx(x, y, z)] = block;
+  return { width: w, height: s, depth: s, blocks };
+}
+
+/** Map a high-level `type` to a concrete voxel grid. */
+export function generateGrid(type: string, block: string, size: number): VoxelGrid {
+  switch (type) {
+    case "house":
+    case "box":
+      return box(size, block, type !== "box");
+    case "tower":
+    case "pyramid":
+      return pyramid(size, block);
+    case "fence":
+    case "wall":
+      return wall(size, Math.max(2, Math.floor(size / 2)), block);
+    case "sphere":
+      return sphere(size, block);
+    case "dome":
+      return dome(size, block);
+    case "bridge":
+      return bridge(size, Math.max(3, Math.floor(size / 2)), block);
+    case "stairs":
+      return stairs(size, size, block);
+    default:
+      throw new Error(`unknown type: ${type} (house|box|tower|pyramid|fence|wall|sphere|dome|bridge|stairs)`);
+  }
+}
