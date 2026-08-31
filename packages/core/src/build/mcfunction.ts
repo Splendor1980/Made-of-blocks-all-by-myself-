@@ -18,6 +18,8 @@ export interface McfunctionOptions {
 export interface McfunctionResult {
   commands: string[];
   violations: ScanViolation[];
+  /** Human note when the grid is unusually large (informational only). */
+  note?: string;
 }
 
 function idx(g: VoxelGrid, x: number, y: number, z: number): number {
@@ -84,7 +86,11 @@ export function gridToMcfunction(
   }
 
   violations.push(...scanCommands(commands));
-  return { commands, violations };
+  const note =
+    grid.width * grid.height * grid.depth >= 4096
+      ? "This build is large (>=4096 blocks) and may lag a low-end machine. Split it into smaller pieces or build on a server for better performance."
+      : undefined;
+  return { commands, violations, note };
 }
 
 /** Sanitizes an arbitrary list of function commands. */

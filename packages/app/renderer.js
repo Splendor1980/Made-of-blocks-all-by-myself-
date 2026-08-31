@@ -243,9 +243,18 @@ async function initWorlds() {
   controls.style.display = "block";
   const gate = await api.getGateStatus().catch(() => null);
   if (gate) {
-    document.getElementById("worldsGate") &&
-      (document.getElementById("worldsGate").textContent =
-        `Gate 0: launches ${gate.launches}/${gate.thresholds.launches}, png ${gate.png}/${gate.thresholds.png}, returns ${gate.returns}/${gate.thresholds.returns}`);
+    const el = document.getElementById("worldsGate");
+    if (el) {
+      el.textContent =
+        `Gate 0: launches ${gate.launches}/${gate.thresholds.launches}, png ${gate.png}/${gate.thresholds.png}, returns ${gate.returns}/${gate.thresholds.returns}`;
+      if (!gate.passed) {
+        const shift = document.getElementById("worldsGateShift");
+        if (shift) {
+          shift.textContent =
+            "Совет: построения откроются, когда вы вернётесь снова (в другой день) и создадите пару скинов. Возвращайся завтра!";
+        }
+      }
+    }
   }
   document.getElementById("worldGen").onclick = () => generateWorld();
 

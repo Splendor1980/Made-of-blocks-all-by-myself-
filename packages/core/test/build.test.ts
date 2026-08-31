@@ -97,6 +97,17 @@ describe("gridToMcfunction", () => {
     const { violations } = gridToMcfunction(grid);
     expect(violations.some((v) => /command blocks/.test(v.reason))).toBe(true);
   });
+
+  it("adds a size note for very large builds instead of splitting commands", () => {
+    const { note, commands } = gridToMcfunction(box(16, "stone")); // 16^3 = 4096
+    expect(note).toMatch(/large/);
+    expect(commands.length).toBeGreaterThan(0);
+  });
+
+  it("omits the note for small builds", () => {
+    const { note } = gridToMcfunction(box(3, "stone"));
+    expect(note).toBeUndefined();
+  });
 });
 
 describe("sanitizeFunction", () => {

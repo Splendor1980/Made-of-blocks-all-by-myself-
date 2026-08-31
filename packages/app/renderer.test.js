@@ -77,6 +77,9 @@ describe("Skin Studio renderer wiring", () => {
   it("wires the Gate 0 status text", () => {
     expect(document.getElementById("worldsGate").textContent).toContain("Gate 0");
   });
+  it("shows a honest return-nudge while the gate is not passed", () => {
+    expect(document.getElementById("worldsGateShift").textContent).toMatch(/вернётесь/);
+  });
   it("preset click triggers generateWorld with parsed args", () => {
     document.querySelector('.preset[data-type="house"]').click();
     expect(api.generateWorld).toHaveBeenCalled();
