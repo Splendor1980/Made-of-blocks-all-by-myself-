@@ -4,6 +4,7 @@ import {
   detectModel,
   expandLegacySkin,
   recolorTemplate,
+  tintSkin,
   importSkin,
   paintRegion,
   paintPixel,
@@ -91,6 +92,27 @@ describe("recolorTemplate", () => {
     expect(out.width).toBe(64);
     expect(out.height).toBe(64);
     expect(validateSkin(out).valid).toBe(true);
+  });
+});
+
+describe("tintSkin", () => {
+  it("blends opaque pixels toward the target color and keeps alpha", () => {
+    const img: RGBA = { width: 64, height: 64, data: Buffer.alloc(64 * 64 * 4) };
+    const i = (10 * 64 + 10) * 4;
+    img.data[i] = 255; img.data[i + 1] = 255; img.data[i + 2] = 255; img.data[i + 3] = 255;
+    const out = tintSkin(img, "#000000", 0.5);
+    // white blended 50% toward black = 127
+    expect(out.data[i]).toBeGreaterThanOrEqual(126);
+    expect(out.data[i]).toBeLessThanOrEqual(128);
+    expect(out.data[i + 3]).toBe(255); // alpha preserved
+  });
+
+  it("does not draw color into transparent pixels", () => {
+    const img: RGBA = { width: 64, height: 64, data: Buffer.alloc(64 * 64 * 4) };
+    const i = (0 * 64 + 0) * 4; // transparent
+    const out = tintSkin(img, "#ff0000", 1.0);
+    expect(out.data[i + 3]).toBe(0);
+    expect(out.data[i]).toBe(0);
   });
 });
 

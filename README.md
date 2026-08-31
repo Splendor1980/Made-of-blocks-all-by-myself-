@@ -33,7 +33,7 @@ OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins
 The Skin Studio buttons work **without** any model/Desktop (deterministic). The agent chat reports "unavailable" if no provider is configured.
 
 ## Skins (deterministic, no AI pixels)
-Start from a built-in template (knight/mage/robot) and recolor by body part, import your own 64×64 PNG, or paint specific UV regions in the editor. You can also **describe a skin in text** — the `generate_skin` tool maps keywords (e.g. "glowing ice mage", "dark steel robot") to a template + colors, fully offline. Project **Save/Load** (`.mcskin.json`) preserves the working skin including edits and template state.
+Start from a built-in template (knight/mage/robot) and recolor by body part, import your own 64×64 PNG, or paint specific UV regions in the editor. A first-run **onboarding** shows the disclaimer + age consent, and an **Ideas** panel has 6 clickable starter cards (Ice Mage, Steel Robot, Sun Knight, …) with live previews, plus an **"Evil version of MY skin"** one-click tint that works on any loaded template or import. You can also **describe a skin in text** — the `generate_skin` tool maps keywords (e.g. "glowing ice mage", "dark steel robot") to a template + colors, fully offline. Project **Save/Load** (`.mcskin.json`) preserves the working skin including edits and template state.
 
 ## Gate 0 (skins → crafter)
 `crafter` stays disabled until metrics hit ≥20 launches, ≥10 PNG, ≥5 returns (distinct days). `gate-switch.mjs` runs automatically on every UI/CLI launch (and can be run manually) to auto-remove `disable: true` and log to `docs/gate-log.md`. Thresholds are fixed; metrics are never faked.

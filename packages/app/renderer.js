@@ -73,6 +73,7 @@ async function selectTemplate(id) {
   // reset color pickers to template default slots
   const defaults = await api.recolorTemplate(id, {}, null, null);
   setPreview(defaults);
+  if (window.__markEvil) window.__markEvil();
 }
 
 function buildEditor() {
@@ -126,6 +127,8 @@ function buildEditor() {
 }
 
 async function init() {
+  buildOnboarding();
+  buildIdeas();
   initViewer();
   const templates = await api.listTemplates();
   const host = document.getElementById("templates");
@@ -183,6 +186,7 @@ async function init() {
       current = { templateId: null, colors: {}, imported: res.dataUrl };
       document.getElementById("templateName").textContent = `Imported (${res.model})`;
       setPreview(res.dataUrl);
+      if (window.__markEvil) window.__markEvil();
     } catch (err) {
       errEl.textContent = "Import failed: " + (err && err.message ? err.message : err);
     }
@@ -380,6 +384,84 @@ async function generateWorld() {
   list.prepend(item);
   document.getElementById("worldZip").style.display = "inline-block";
   wireZipButton(() => api.generateWorld({ type, block, size, out, zip: true }));
+}
+
+const IDEAS = [
+  { id: "mage", color: "#7fdbff", label: "Ice Mage" },
+  { id: "robot", color: "#8a93a0", label: "Steel Robot" },
+  { id: "knight", color: "#e6c63c", label: "Sun Knight" },
+  { id: "mage", color: "#1f6fdb", label: "Ocean Explorer" },
+  { id: "knight", color: "#3aa64a", label: "Forest Spirit" },
+  { id: "robot", color: "#2b2b33", label: "Neon Shadow" },
+];
+
+function buildOnboarding() {
+  const el = document.getElementById("onboarding");
+  const consented = (cb) => cb && cb.checked;
+  const okBtn = document.getElementById("onboardingOk");
+  const skipBtn = document.getElementById("onboardingSkip");
+  const consent = document.getElementById("ageConsent");
+  const finish = () => {
+    el.classList.add("hidden");
+    localStorage.setItem("mc_agent_onboarding_done", "1");
+  };
+  if (localStorage.getItem("mc_agent_onboarding_done") === "1") {
+    el.classList.add("hidden");
+    return;
+  }
+  consent.onchange = () => { okBtn.disabled = !consent.checked; };
+  okBtn.onclick = finish;
+  skipBtn.onclick = finish;
+}
+
+async function themedPreview(id, color) {
+  const base = await api.recolorTemplate(id, {}, null, null);
+  return api.tintSkin(base, color, 0.45);
+}
+
+async function applyIdea(id, color) {
+  await selectTemplate(id);
+  const themed = await themedPreview(id, color);
+  setPreview(themed);
+  current.skinUrl = themed;
+}
+
+function buildIdeas() {
+  const host = document.getElementById("ideas");
+  host.innerHTML = "";
+  const cards = [];
+  for (const idea of IDEAS) {
+    const wrap = document.createElement("div");
+    wrap.className = "idea";
+    const img = document.createElement("img");
+    img.alt = idea.label;
+    themedPreview(idea.id, idea.color).then((url) => { img.src = url; }).catch(() => {});
+    const btn = document.createElement("button");
+    btn.textContent = idea.label;
+    btn.onclick = () => applyIdea(idea.id, idea.color);
+    wrap.append(img, btn);
+    host.appendChild(wrap);
+  }
+  // Evil version of MY skin — works on the current template OR an imported skin.
+  const evil = document.createElement("div");
+  evil.className = "idea";
+  const evilBtn = document.createElement("button");
+  evilBtn.textContent = "Evil version of MY skin";
+  const doEvil = async () => {
+    if (!current.skinUrl) { alert("Load a skin first (pick a template or import a PNG)."); return; }
+    const tinted = await api.tintSkin(current.skinUrl, "#5a0f1a", 0.55);
+    setPreview(tinted);
+    current.skinUrl = tinted;
+  };
+  evilBtn.onclick = doEvil;
+  const mark = () => {
+    if (!current.skinUrl) { evil.classList.add("disabled"); evilBtn.disabled = true; }
+    else { evil.classList.remove("disabled"); evilBtn.disabled = false; }
+  };
+  mark();
+  window.__markEvil = mark;
+  evil.append(evilBtn);
+  host.appendChild(evil);
 }
 
 init();

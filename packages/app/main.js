@@ -9,6 +9,7 @@ import {
   decodePng,
   encodePng,
   importSkin,
+  tintSkin,
   paintPixel,
   insideRegions,
   regionsForPart,
@@ -79,6 +80,11 @@ ipcMain.handle("importSkin", async (_e, { dataUrl }) => {
   return { model, dataUrl: `data:image/png;base64,${encodePng(img).toString("base64")}` };
 });
 ipcMain.handle("getMetrics", () => metrics.get());
+ipcMain.handle("tintSkin", async (_e, { dataUrl, hex, factor }) => {
+  const b64 = dataUrl.replace(/^data:image\/[a-z]+;base64,/, "");
+  const img = tintSkin(decodePng(Buffer.from(b64, "base64")), hex, factor ?? 0.5);
+  return `data:image/png;base64,${encodePng(img).toString("base64")}`;
+});
 ipcMain.handle("partRegions", (_e, { part }) => regionsForPart(part));
 ipcMain.handle("paintSkin", async (_e, { dataUrl, part, x, y, color, size }) => {
   const b64 = dataUrl.replace(/^data:image\/[a-z]+;base64,/, "");

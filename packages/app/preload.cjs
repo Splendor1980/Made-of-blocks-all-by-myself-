@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld("mcApi", {
   partRegions: (part) => ipcRenderer.invoke("partRegions", { part }),
   paintSkin: (dataUrl, part, x, y, color, size) =>
     ipcRenderer.invoke("paintSkin", { dataUrl, part, x, y, color, size }),
+  tintSkin: (dataUrl, hex, factor) =>
+    ipcRenderer.invoke("tintSkin", { dataUrl, hex, factor }),
   sidecarStatus: () => ipcRenderer.invoke("sidecarStatus"),
   startSidecar: () => ipcRenderer.invoke("startSidecar"),
   getGateStatus: () => ipcRenderer.invoke("getGateStatus"),

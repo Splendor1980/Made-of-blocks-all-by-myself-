@@ -80,4 +80,28 @@ export function recolorPart(
   return recolorTemplate(template, next);
 }
 
+/**
+ * Applies a global color tint/bias to any skin image (template or imported),
+ * blending each opaque pixel toward `hex`. Used for ideas like "make an EVIL
+ * version of my skin". Alpha is always preserved; factor 0..1 is how strongly
+ * the target color pulls the result.
+ */
+export function tintSkin(img: RGBA, hex: string, factor = 0.5): RGBA {
+  const [tr, tg, tb] = parseHex(hex);
+  const out: RGBA = {
+    width: img.width,
+    height: img.height,
+    data: Buffer.from(img.data),
+  };
+  for (let i = 0; i < out.data.length; i += 4) {
+    const a = out.data[i + 3];
+    if (a === 0) continue;
+    out.data[i] = Math.round(out.data[i] * (1 - factor) + tr * factor);
+    out.data[i + 1] = Math.round(out.data[i + 1] * (1 - factor) + tg * factor);
+    out.data[i + 2] = Math.round(out.data[i + 2] * (1 - factor) + tb * factor);
+    out.data[i + 3] = a;
+  }
+  return out;
+}
+
 export { regionsForPart };

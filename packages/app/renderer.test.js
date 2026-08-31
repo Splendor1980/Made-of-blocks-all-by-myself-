@@ -34,6 +34,7 @@ function makeApi() {
     })),
     openPath: vi.fn(async () => ({ ok: true })),
     paintSkin: vi.fn(async (url) => url),
+    tintSkin: vi.fn(async (url) => url),
   };
 }
 
@@ -58,6 +59,17 @@ beforeAll(async () => {
 describe("Skin Studio renderer wiring", () => {
   it("renders the 3 built-in templates", () => {
     expect(document.getElementById("templates").children.length).toBe(3);
+  });
+  it("renders the idea cards + How-to-wear", () => {
+    expect(document.getElementById("ideas").children.length).toBe(7); // 6 ideas + evil card
+    expect(document.querySelector("details").textContent).toMatch(/How to wear/i);
+  });
+  it("idea card click applies template and tints via IPC", async () => {
+    const first = document.querySelector(".idea button");
+    first.click();
+    await new Promise((r) => setTimeout(r, 40));
+    expect(api.recolorTemplate).toHaveBeenCalled();
+    expect(api.tintSkin).toHaveBeenCalled();
   });
   it("shows live metrics", () => {
     expect(document.getElementById("metrics").textContent).toContain("launches: 20");

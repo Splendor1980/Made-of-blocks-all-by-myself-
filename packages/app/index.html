@@ -19,9 +19,32 @@
       .row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
       #metrics { font-size: 12px; opacity: 0.7; margin-top: 8px; }
       #templateName { opacity: 0.8; font-size: 13px; }
+      #onboarding { position: fixed; inset: 0; background: rgba(6,9,14,.92); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+      #onboarding.hidden { display: none; }
+      .modal { background: #1d232d; max-width: 560px; border-radius: 10px; padding: 22px; border: 1px solid #334; }
+      .modal h2 { margin-top: 0; }
+      .idea { display: inline-block; width: 96px; margin: 6px; vertical-align: top; text-align: center; }
+      .idea img { width: 84px; height: 84px; image-rendering: pixelated; background: #0d1117; border: 1px solid #334; border-radius: 6px; }
+      .idea button { width: 100%; margin-top: 4px; }
+      .idea.disabled button { opacity: .4; cursor: not-allowed; }
+      details { margin-top: 6px; font-size: 13px; }
+      .consent { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
     </style>
   </head>
   <body>
+    <div id="onboarding">
+      <div class="modal">
+        <h2>Welcome to mc-agent Skin Studio</h2>
+        <p>Make your own <strong>custom Minecraft skin</strong> and <strong>datapack builds</strong> — no coding, no AI-generated pixels.</p>
+        <p><strong>NOT AN OFFICIAL MINECRAFT PRODUCT, NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</strong></p>
+        <p>This tool creates original skins and textureless datapacks. We do not collect any personal data.</p>
+        <label class="consent"><input type="checkbox" id="ageConsent" /> I am 13 or older, or am using this with a parent.</label>
+        <div class="row">
+          <button id="onboardingOk" disabled>Let's go</button>
+          <button id="onboardingSkip">Skip</button>
+        </div>
+      </div>
+    </div>
     <h1>mc-agent — Skin Studio (deterministic, Stage 1)</h1>
     <div class="layout">
        <div class="panel">
@@ -112,6 +135,19 @@
           <div id="worldList" style="font-size:12px"></div>
         </div>
       </div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <p><strong>Ideas — start with one of these (click a card):</strong></p>
+      <div id="ideas"></div>
+      <details>
+        <summary><strong>How to wear your skin</strong> (3 ways)</summary>
+        <ol style="margin:8px 0">
+          <li><strong>Java (buyer account):</strong> in the launcher, go to <em>Skin</em> and upload the exported PNG.</li>
+          <li><strong>Java (any account):</strong> save the PNG as <code>skin.png</code> and use a server's skin command (e.g. <code>/skin set</code>) if the server supports it.</li>
+          <li><strong>Bedrock:</strong> pick the stored skin in the character creator profile.</li>
+        </ol>
+        <em>Full step-by-step: see GETTING_STARTED.md</em>
+      </details>
     </div>
     <footer style="padding:8px 14px;font-size:11px;opacity:.75;border-top:1px solid #333">
       mc-agent — NOT AN OFFICIAL MINECRAFT PRODUCT, NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
