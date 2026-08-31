@@ -16,5 +16,10 @@ Tracked here so the next step is obvious. Update when resolved.
 - `opencode/*-free` returns `Unexpected server error` (no provider login). This is outside our code: the app/agents/tools are correctly wired and load. A real run needs `opencode providers login` or an OpenRouter key on the user's machine.
 - Deterministic skin flow (templates, recolor, import, paint, export) needs **no LLM** and is fully usable now.
 
-## 4. CSP for the companion UI
+## 4. Windows SmartScreen / Defender
+- On Windows, the first launch of the Electron app (`npm start`) may trigger a **Windows SmartScreen** popup ("Windows protected your PC") because the executable is unsigned. Click **More info → Run anyway**.
+- If **Windows Defender** or another antivirus flags the app, it is a false positive — the Electron binary is legitimate but unsigned. Add an exclusion for the `mc-agent` folder in your antivirus settings.
+- A future release with a code-signing certificate will eliminate these warnings.
+
+## 5. CSP for the companion UI
 - `index.html` uses `default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';`. The skinview3d bundle is loaded from `../../node_modules/skinview3d/bundles/skinview3d.bundle.js`. If you change the bundle path, keep it within `file://` self-origin.

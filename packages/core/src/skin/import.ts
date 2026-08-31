@@ -1,5 +1,5 @@
 import type { RGBA, SkinModel } from "./types.js";
-import { detectModel, validateSkin } from "./validate.js";
+import { detectModel, expandLegacySkin, validateSkin } from "./validate.js";
 
 /**
  * Validates an uploaded skin PNG and coerces it to the requested model.
@@ -20,10 +20,12 @@ export function importSkin(
     throw new Error(`Skin import rejected: ${result.errors.join("; ")}`);
   }
 
+  // Normalize legacy 64x32 uploads to the modern 64x64 layout.
+  const normalized = img.width === 64 && img.height === 32 ? expandLegacySkin(img) : img;
   const image: RGBA = {
-    width: img.width,
-    height: img.height,
-    data: Buffer.from(img.data),
+    width: normalized.width,
+    height: normalized.height,
+    data: Buffer.from(normalized.data),
   };
   return { image, model, result };
 }

@@ -2,12 +2,14 @@ import { describe, it, expect } from "vitest";
 import {
   validateSkin,
   detectModel,
+  expandLegacySkin,
   recolorTemplate,
   importSkin,
   paintRegion,
   paintPixel,
   insideRegions,
   moderateSkin,
+  moderatePrompt,
   createBlankTemplate,
   regionsForPart,
   type RGBA,
@@ -126,6 +128,73 @@ describe("paintPixel / insideRegions", () => {
     expect(insideRegions(regions, 0, 0)).toBe(false);
     // pixel unchanged because callers should guard with insideRegions (verified above)
     expect(out.data[0]).toBe(1); // paintPixel itself paints unconditionally
+  });
+});
+
+describe("expandLegacySkin / import legacy 64x32", () => {
+  it("expands 64x32 to 64x64, copying top half to bottom", () => {
+    const img: RGBA = {
+      width: 64,
+      height: 32,
+      data: Buffer.alloc(64 * 32 * 4, 255),
+    };
+    const out = expandLegacySkin(img);
+    expect(out.width).toBe(64);
+    expect(out.height).toBe(64);
+    expect(out.data.length).toBe(64 * 64 * 4);
+    const top = (5 * 64 + 5) * 4;
+    const bot = ((5 + 32) * 64 + 5) * 4;
+    expect(out.data[bot]).toBe(255);
+  });
+
+  it("importSkin normalizes a legacy 64x32 upload to 64x64", () => {
+    const legacy: RGBA = { width: 64, height: 32, data: Buffer.alloc(64 * 32 * 4, 200) };
+    const { image } = importSkin(legacy);
+    expect(image.width).toBe(64);
+    expect(image.height).toBe(64);
+    expect(image.data.length).toBe(64 * 64 * 4);
+  });
+});
+
+describe("validateSkin objective checks", () => {
+  it("warns when the front head (base face) is empty", () => {
+    const img: RGBA = { width: 64, height: 64, data: Buffer.alloc(64 * 64 * 4) };
+    const r = validateSkin(img);
+    expect(r.warnings.join(" ")).toMatch(/face/i);
+  });
+
+  it("flags opaque pixels in reserved padding zones", () => {
+    const img: RGBA = { width: 64, height: 64, data: Buffer.alloc(64 * 64 * 4) };
+    img.data[(0 * 64 + 0) * 4 + 3] = 255; // x=0 is padding
+    const r = validateSkin(img);
+    expect(r.warnings.join(" ")).toMatch(/padding/i);
+  });
+});
+
+describe("moderatePrompt", () => {
+  it("allows ordinary skin ideas", () => {
+    expect(moderatePrompt("make a glowing ice mage").allowed).toBe(true);
+    expect(moderatePrompt("dark steel robot").allowed).toBe(true);
+  });
+
+  it("refuses a branded character", () => {
+    const r = moderatePrompt("make me Elsa please");
+    expect(r.allowed).toBe(false);
+  });
+
+  it("refuses by English brand name", () => {
+    const r = moderatePrompt("i want a spiderman skin");
+    expect(r.allowed).toBe(false);
+  });
+
+  it("refuses an exact-copy request", () => {
+    const r = moderatePrompt("make it pixel perfect copy of my friend's skin");
+    expect(r.allowed).toBe(false);
+  });
+
+  it("suggests an original alternative on refusal", () => {
+    const r = moderatePrompt("make Mickey Mouse");
+    expect(r.suggestion).toMatch(/original/i);
   });
 });
 

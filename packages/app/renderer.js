@@ -319,6 +319,30 @@ async function initWorlds() {
     const item = document.createElement("div");
     item.textContent = `• imported ${res.id} → ${res.command}`;
     list.prepend(item);
+    document.getElementById("worldZip").style.display = "inline-block";
+    const importArgs = { data: importData, id: importId, out: "out/imported" };
+    wireZipButton(() => api.importNbt({ ...importArgs, zip: true }));
+  };
+}
+
+function wireZipButton(maker) {
+  document.getElementById("worldZip").onclick = async () => {
+    const status = document.getElementById("worldStatus");
+    const el = document.getElementById("worldResult");
+    status.textContent = "Packing zip…";
+    const res = await maker()
+      .catch((e) => ({ error: (e && e.message) || String(e) }));
+    if (res.error) {
+      status.textContent = "";
+      el.textContent = "Error: " + res.error;
+      return;
+    }
+    const openBtn = document.getElementById("worldOpen");
+    openBtn.style.display = "inline-block";
+    openBtn.onclick = () => api.openPath(res.outDir);
+    el.textContent =
+      `Packed .zip:\n${res.zipPath}\n` +
+      `Copy the .zip into saves/<world>/datapacks/ (or unzip into the datapacks folder).`;
   };
 }
 
@@ -354,6 +378,8 @@ async function generateWorld() {
   const item = document.createElement("div");
   item.textContent = `• ${type} (${size}) → ${res.command}`;
   list.prepend(item);
+  document.getElementById("worldZip").style.display = "inline-block";
+  wireZipButton(() => api.generateWorld({ type, block, size, out, zip: true }));
 }
 
 init();

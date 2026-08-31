@@ -130,7 +130,7 @@ ipcMain.handle("getGateStatus", async () => {
 
 ipcMain.handle(
   "generateWorld",
-  async (_e, { type = "house", block = "minecraft:oak_planks", size = 5, out = "out/world" }) => {
+  async (_e, { type = "house", block = "minecraft:oak_planks", size = 5, out = "out/world", zip = false }) => {
     const grid = generateGrid(type, block, size);
     const structureId = `${type}_${size}`;
     const dp = createDatapack({
@@ -148,7 +148,12 @@ ipcMain.handle(
     const outDir = join(REPO_ROOT, out);
     await mkdir(outDir, { recursive: true });
     const files = await dp.build(outDir);
-    return { files, command: `/function genmod:build_${type}`, structureId, outDir };
+    let zipPath;
+    if (zip) {
+      zipPath = join(outDir, `${dp.meta.name}.zip`);
+      await writeFile(zipPath, await dp.toZip());
+    }
+    return { files, zipPath, command: `/function genmod:build_${type}`, structureId, outDir };
   },
 );
 
@@ -178,7 +183,7 @@ ipcMain.handle("previewImport", async (_e, { data }) => {
 
 ipcMain.handle(
   "importNbt",
-  async (_e, { data, id, out = "out/imported", namespace = "imported" }) => {
+  async (_e, { data, id, out = "out/imported", namespace = "imported", zip = false }) => {
     const buf = Buffer.from(data, "base64");
     const grid = readStructureNbt(buf);
     const blockCount = grid.blocks.filter(Boolean).length;
@@ -198,7 +203,12 @@ ipcMain.handle(
     const outDir = join(REPO_ROOT, out);
     await mkdir(outDir, { recursive: true });
     const files = await dp.build(outDir);
-    return { files, command: `/function ${namespace}:build_${structId}`, id: structId, blockCount, outDir };
+    let zipPath;
+    if (zip) {
+      zipPath = join(outDir, `${dp.meta.name}.zip`);
+      await writeFile(zipPath, await dp.toZip());
+    }
+    return { files, zipPath, command: `/function ${namespace}:build_${structId}`, id: structId, blockCount, outDir };
   },
 );
 

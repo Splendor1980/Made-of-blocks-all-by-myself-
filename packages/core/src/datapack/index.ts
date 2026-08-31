@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import JSZip from "jszip";
 import { sanitizeFunction } from "../build/mcfunction.js";
 import type { ScanViolation } from "../build/security.js";
 
@@ -151,33 +152,46 @@ export class Datapack {
     };
   }
 
+  /** Returns a map of relative file path -> file content for the whole pack. */
+  private files(): Record<string, string | Buffer> {
+    const files: Record<string, string | Buffer> = {};
+    const ns = this.meta.namespace;
+    files["pack.mcmeta"] = JSON.stringify(
+      { pack: { pack_format: this.meta.format, description: this.meta.description ?? this.meta.name } },
+      null,
+      2,
+    );
+    for (const r of this.recipes) files[`data/${ns}/recipes/${r.path}.json`] = JSON.stringify(r.json, null, 2);
+    for (const f of this.functions) files[`data/${ns}/functions/${f.path}.mcfunction`] = f.commands.join("\n") + "\n";
+    for (const a of this.advancements) files[`data/${ns}/advancements/${a.path}.json`] = JSON.stringify(a.json, null, 2);
+    for (const l of this.lootTables) files[`data/${ns}/loot_tables/${l.path}.json`] = JSON.stringify(l.json, null, 2);
+    for (const s of this.structures) {
+      if (s.nbt) files[`data/${ns}/structures/${s.id}.nbt`] = s.nbt;
+      else files[`data/${ns}/structures/${s.id}.nbt.placeholder`] = "";
+    }
+    return files;
+  }
+
   async build(outputDir: string): Promise<string[]> {
     const root = join(outputDir, this.meta.name);
-    const data = join(root, "data", this.meta.namespace);
     const written: string[] = [];
-    const put = async (rel: string, content: string | Buffer) => {
+    for (const [rel, content] of Object.entries(this.files())) {
       const p = join(root, rel);
       await mkdir(join(p, ".."), { recursive: true });
       await writeFile(p, content);
       written.push(p);
-    };
-    await put(
-      "pack.mcmeta",
-      JSON.stringify(
-        { pack: { pack_format: this.meta.format, description: this.meta.description ?? this.meta.name } },
-        null,
-        2,
-      ),
-    );
-    for (const r of this.recipes) await put(`data/${this.meta.namespace}/recipes/${r.path}.json`, JSON.stringify(r.json, null, 2));
-    for (const f of this.functions) await put(`data/${this.meta.namespace}/functions/${f.path}.mcfunction`, f.commands.join("\n") + "\n");
-    for (const a of this.advancements) await put(`data/${this.meta.namespace}/advancements/${a.path}.json`, JSON.stringify(a.json, null, 2));
-    for (const l of this.lootTables) await put(`data/${this.meta.namespace}/loot_tables/${l.path}.json`, JSON.stringify(l.json, null, 2));
-    for (const s of this.structures) {
-      if (s.nbt) await put(`data/${this.meta.namespace}/structures/${s.id}.nbt`, s.nbt);
-      else await put(`data/${this.meta.namespace}/structures/${s.id}.nbt.placeholder`, "");
     }
     return written;
+  }
+
+  /** Produces a reproducible .zip of the datapack (no timestamp metadata). */
+  async toZip(): Promise<Buffer> {
+    const zip = new JSZip();
+    const root = zip.folder(this.meta.name)!;
+    for (const [rel, content] of Object.entries(this.files())) {
+      root.file(rel, content);
+    }
+    return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
   }
 }
 

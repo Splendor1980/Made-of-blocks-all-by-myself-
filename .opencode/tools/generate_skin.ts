@@ -6,6 +6,7 @@ import {
   recolorTemplate,
   encodePng,
   validateSkin,
+  moderatePrompt,
   builtinTemplateIds,
   type SkinTemplate,
 } from "@mc-agent/core";
@@ -137,6 +138,12 @@ export default tool({
     output: tool.schema.string().describe("Output PNG path, relative to project root."),
   },
   async execute({ prompt, templateId, output }, ctx) {
+    const mod = moderatePrompt(prompt);
+    if (!mod.allowed) {
+      return (
+        "I can't make that skin: " + mod.reasons.join("; ") + ". " + (mod.suggestion ?? "")
+      );
+    }
     const { color, template } = parsePrompt(prompt);
     const dir = join(ctx.worktree, "assets", "templates");
     const tpl: SkinTemplate = loadTemplate(dir, templateId ?? template);

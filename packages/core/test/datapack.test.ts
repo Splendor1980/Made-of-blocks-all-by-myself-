@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, readFile, rm, mkdir, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import JSZip from "jszip";
 import { createDatapack, Datapack } from "../src/datapack/index.js";
 import { writeStructureNbt } from "../src/build/index.js";
 
@@ -72,5 +73,18 @@ describe("Datapack", () => {
     const onDisk = await readFile(nbtPath);
     expect(onDisk.length).toBe(nbt.length);
     await rm(dir, { recursive: true, force: true });
+  });
+
+  it("produces a valid .zip of the pack", async () => {
+    const dp = createDatapack({ name: "zip_pack", namespace: "zipmod", description: "zip" });
+    dp.addFunction({ id: "go", commands: ["say zip ok"] });
+    const zipBuf = await dp.toZip();
+    expect(Buffer.isBuffer(zipBuf)).toBe(true);
+    expect(zipBuf.length).toBeGreaterThan(0);
+
+    const zip = await JSZip.loadAsync(zipBuf);
+    const names = Object.keys(zip.files);
+    expect(names).toContain("zip_pack/pack.mcmeta");
+    expect(names).toContain("zip_pack/data/zipmod/functions/go.mcfunction");
   });
 });

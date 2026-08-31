@@ -25,3 +25,5 @@ The script enables the `crafter` agent (removes `disable: true` from
 - 2026-08-27T18:29:41.881Z | launches=20 png=2 returns=1 passed=false -> no change: thresholds not met (need >=20 launches, >=10 png, >=5 returns)
 - 2026-08-27T18:36:20.618Z | launches=20 png=2 returns=1 passed=false -> no change: thresholds not met (need >=20 launches, >=10 png, >=5 returns)
 - 2026-08-27T18:36:21.059Z | launches=21 png=2 returns=1 passed=false -> no change: thresholds not met (need >=20 launches, >=10 png, >=5 returns)
+- 2026-08-31T09:42:31.786Z | launches=21 png=2 returns=1 passed=false -> no change: thresholds not met (need >=20 launches, >=10 png, >=5 returns)
+- 2026-08-31T09:42:32.309Z | launches=22 png=2 returns=2 passed=false -> no change: thresholds not met (need >=20 launches, >=10 png, >=5 returns)

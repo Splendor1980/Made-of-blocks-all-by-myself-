@@ -2,6 +2,9 @@
 
 OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins first; datapacks/structures gated behind Gate 0). This repo is meant to be **opened as a folder in OpenCode Desktop** — Desktop provides the models and runs the agents/tools defined in `.opencode/`.
 
+> **NOT AN OFFICIAL MINECRAFT PRODUCT, NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.**  
+> This tool creates custom skin PNGs and textureless datapacks; it never contains or distributes official Minecraft game assets. See [docs/legal.md](./docs/legal.md) for the full disclaimer.
+
 **New here?** Read [GETTING_STARTED.md](./GETTING_STARTED.md) — a no-coding guide for players.
 
 ## What's inside
@@ -38,7 +41,7 @@ Start from a built-in template (knight/mage/robot) and recolor by body part, imp
 ## Worlds (datapacks / structures)
 A **Worlds** panel in the Skin Studio UI calls `generateWorld` and writes a datapack folder; no writes to existing saves happen automatically. The panel shows a **live isometric preview** of the selected shape, and you can **import an existing `.nbt`** structure (it is rendered and wrapped into a fresh datapack with a load function).
 Headless equivalent: `node scripts/generate-world.mjs --type <house|box|tower|pyramid|fence|wall|sphere|dome|bridge|stairs> --block <id> --size <n> --out <dir>`.
-Output is a **folder** (not a zip), e.g. `out/world/pack.mcmeta` + `data/genmod/structures/<type>_<size>.nbt` + `data/genmod/functions/build_<type>.mcfunction`. Copy that folder into `saves/<world>/datapacks/`, then run `/function genmod:build_<type>` in-game.
+Output is a **folder** by default, e.g. `out/world/pack.mcmeta` + `data/genmod/structures/<type>_<size>.nbt` + `data/genmod/functions/build_<type>.mcfunction`. In the UI you can also press **Download .zip** to get a ready-to-copy `generated_pack.zip`. Copy the folder (or unzip the .zip) into `saves/<world>/datapacks/`, then run `/function genmod:build_<type>` in-game.
 The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `build_nbt` for the same result from chat. The higher-level `craft_datapack` tool builds a full datapack in **one call** — a single structure **or a `structures` array (a multi-structure "scene")** plus recipes/advancements/loot/functions. `import_structure` imports a player's existing `.nbt` (Java structure format, gzip-aware) — never touches an existing save. The `crafter` subagent (`.opencode/agents/crafter.md`, enabled) uses them: ask the OpenCode agent to "build a pyramid world", "make a starter kit with a recipe", or "import my castle.nbt".
 
 **Example gallery:** `node scripts/make-examples.mjs` generates ready-to-use datapacks into `examples/` (house, pyramid, tower, and a `example_starter_kit` with a recipe + advancement + loot + function). Copy any `examples/<name>` folder into `saves/<world>/datapacks/`.
