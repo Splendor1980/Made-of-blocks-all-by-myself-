@@ -20,12 +20,13 @@ OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins
 
 ## Quick start
 1. **Open this folder (`mc-agent`) in OpenCode Desktop.** Agents and tools are picked up from `.opencode/` automatically.
-2. **Skin Studio window** (companion UI), any of:
+2. **One-click install (Windows, easy path):** double-click **`setup-windows.bat`** in the repo root. It checks Node, runs `npm install`, self-heals the Electron binary + `path.txt`, creates a **`mc-agent Skin Studio`** Desktop shortcut, and launches the app.
+3. **Any of the manual ways to open Skin Studio** (companion UI):
    - double-click the **`mc-agent Skin Studio`** shortcut on the Desktop (runs `launch-skin-studio.bat`),
    - `cd packages/app && npm install && npm start`,
    - or ask the `skins` agent to open it (`open_skin_studio` tool).
-   > The Electron binary must be present in `node_modules/electron/dist` (downloaded by `npm install` on a normal network; see `docs/blockers.md` if it's missing).
-3. **Headless / CLI only:**
+   > `launch-skin-studio.bat` recreates the Electron `path.txt` automatically if it's missing, so a fresh clone with the binary present still starts. See `docs/blockers.md` if the binary itself is absent.
+4. **Headless / CLI only:**
    - skins: `node scripts/skin-cli.mjs list`, then `node scripts/skin-cli.mjs run <id> <hexcolor> [part] --write --out out/skin.png`
    - worlds: `node scripts/generate-world.mjs --type pyramid --size 3 --out out/world`
 

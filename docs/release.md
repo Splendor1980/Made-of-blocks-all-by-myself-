@@ -16,7 +16,7 @@ next release is repeatable.
 - [ ] `git status` clean after the above (no build artifacts tracked).
 
 ## 2. Manual verification (no MC server required)
-- [ ] Skin Studio launches (see `docs/blockers.md` §1 for the electron binary + `path.txt`).
+- [ ] Skin Studio launches (see `docs/blockers.md` §1 for the electron binary + `path.txt`; `setup-windows.bat` one-click installs + self-heals both).
 - [ ] Templates render, recolor by part works, Import 64×64 and legacy 64×32, region paint, Export PNG.
 - [ ] Idea cards render with previews; "Evil version of MY skin" works after loading a skin; branded/clone prompts are refused.
 - [ ] Words panel: shape preview, `.nbt` import, folder + zip export.
