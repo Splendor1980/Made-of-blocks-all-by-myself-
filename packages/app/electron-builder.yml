@@ -1,0 +1,49 @@
+# electron-builder config for mc-agent Skin Studio (real .exe / portable).
+# Run from the repo root on a MACHINE WITH INTERNET:
+#   npm i -D electron-builder
+#   npx electron-builder --config packages/app/electron-builder.yml --win nsis
+#   (or: --win portable  for a single .exe that needs no install)
+#
+# The app's main.js resolves repo-level neighbours at runtime via relative
+# ../../ paths, so we pack the matching repo layout INSIDE the app so those
+# paths resolve correctly (electron's asar fs handles nested reads):
+#   <app>/packages/app/main.js
+#   <app>/assets/templates/*      <- ../../assets/templates
+#   <app>/scripts/gate-switch.mjs <- ../../scripts/gate-switch.mjs
+#   <app>/node_modules/@mc-agent/core (dist, build first)
+appId: com.mc-agent.skinstudio
+productName: mc-agent Skin Studio
+copyright: MIT
+
+directories:
+  output: dist
+
+files:
+  - packages/app/**
+  - packages/core/dist/**
+  - assets/templates/**
+  - scripts/gate-switch.mjs
+  - scripts/check-gate.mjs
+  - "!**/*.test.*"
+  - "!**/renderer.test.js"
+
+asarUnpack:
+  - packages/core/dist/**
+
+electronVersion: 33.4.11
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: mc-agent Skin Studio
+
+# NOTE: a code-signing certificate removes SmartScreen/Defender warnings
+# (see docs/blockers.md §4). None is bundled with the repo.

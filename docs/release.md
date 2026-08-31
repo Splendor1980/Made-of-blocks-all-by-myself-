@@ -23,9 +23,19 @@ next release is repeatable.
 - [ ] A datapack loads in a real test world via `/function <ns>:build_<type>`.
 
 ## 3. Windows release packaging
-- [ ] Option A (unsigned dev build): `cd packages/app && npm start`. SmartScreen → "More info → Run anyway"; Defender exclusion for the folder (see `docs/blockers.md` §4).
-- [ ] Option B (distributable): requires `electron-builder` + internet (blocked in the offline sandbox; do on a networked machine). Configure:
-  - `packages/app` build config, `appId`, `productName` (not trademarked), and a **code-signing certificate** to remove SmartScreen/Defender warnings.
+- [ ] **Option A — portable zip (easiest, no Node needed by users):** on a machine that has the repo installed, run `npm run pack:portable`. It produces
+      `dist/mc-agent-win/` + `dist/mc-agent-win.zip` (bundles the Electron binary +
+      app + core + assets + scripts). End user: download → unzip → run `start.cmd`.
+      This is the **recommended first release artifact** for beginners.
+- [ ] **Option B — installer `.exe` (nicer, needs internet):** optional `electron-builder`
+      flow — `npm i -D electron-builder` then
+      `npx electron-builder --config packages/app/electron-builder.yml --win nsis`
+      (or `--win portable`). Produces an installer with a Desktop shortcut.
+- [ ] A code-signing certificate removes SmartScreen/Defender warnings (see
+      `docs/blockers.md` §4).
+- [ ] Host the artifact + readme on a free distribution channel (recommendation:
+      **itch.io** page — download button + built-in comments/rating; alternatives:
+      GitHub Releases, Mega/Yandex/Drive). Create a **Discord** server for live feedback.
 - [ ] No secret keys in the repo or release artifacts (Desktop keys stay in user config).
 
 ## 4. Art / content status

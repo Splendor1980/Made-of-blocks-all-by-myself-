@@ -59,6 +59,7 @@ The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `b
 
 ## Publishing / external use
 - `node_modules/` and `packages/core/dist/` are gitignored; a fresh clone needs `npm install` (the `prepare` script builds `@mc-agent/core` automatically) and then `npm start` in `packages/app`.
+- **Ship to beginners via the portable zip:** run `npm run pack:portable` on any machine that has this repo installed → it produces `dist/mc-agent-win.zip` (bundles Electron, so the end user needs **no Node.js** — just unzip and run `start.cmd`). See `docs/release.md`.
 - Electron's binary is downloaded by `npm install` on a normal network. If it is blocked, see `docs/blockers.md` for the manual-install steps (including the required `node_modules/electron/path.txt`).
 - MIT licensed — see `LICENSE`.
 
