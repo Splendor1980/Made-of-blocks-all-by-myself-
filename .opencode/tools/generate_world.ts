@@ -20,7 +20,7 @@ export default tool({
     "Generate a full Minecraft world fragment in ONE call: an embedded .nbt structure wrapped in a datapack with a load function. " +
     "Wraps the datapack_create and build_nbt tools. Drop the pack into saves/<world>/datapacks and run /function <namespace>:build_<type>.",
   args: {
-    type: tool.schema.string().describe("house | box | tower | pyramid | fence | wall"),
+    type: tool.schema.string().describe("house | box | tower | pyramid | fence | wall | sphere | dome | bridge | stairs | column | ramp | arch | ring"),
     block: tool.schema.string().optional().describe("Block id, e.g. minecraft:oak_planks"),
     state: tool.schema.string().optional().describe("Optional block state, e.g. axis=y for logs"),
     size: tool.schema.number().optional().describe("Base size (cubes/pyramids) or width (wall)"),

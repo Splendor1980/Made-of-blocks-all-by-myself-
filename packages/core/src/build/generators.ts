@@ -101,6 +101,61 @@ export function stairs(width: number, steps: number, block: string): VoxelGrid {
   return { width: w, height: s, depth: s, blocks };
 }
 
+/** A single-block pillar of height `height`. */
+export function column(height: number, block: string): VoxelGrid {
+  const h = Math.max(1, height);
+  const blocks: (string | null)[] = new Array(h).fill(block);
+  return { width: 1, height: h, depth: 1, blocks };
+}
+
+/** An ascending diagonal ramp in X/Y: at height y, spans X 0..y. */
+export function ramp(width: number, height: number, block: string): VoxelGrid {
+  const w = Math.max(1, width);
+  const h = Math.max(1, height);
+  const depth = 1;
+  const blocks: (string | null)[] = new Array(w * h * depth).fill(null);
+  const idx = (x: number, y: number, z: number) => (y * depth + z) * w + x;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (x <= y) blocks[idx(x, y, 0)] = block;
+  return { width: w, height: h, depth, blocks };
+}
+
+/** A hollow arch / doorway in the XZ plane: two pillars + a lintel top. */
+export function arch(width: number, height: number, block: string): VoxelGrid {
+  const w = Math.max(3, width);
+  const h = Math.max(3, height);
+  const depth = 1;
+  const blocks: (string | null)[] = new Array(w * h * depth).fill(null);
+  const idx = (x: number, y: number, z: number) => (y * depth + z) * w + x;
+  for (let x = 0; x < w; x++) {
+    const edgeX = x === 0 || x === w - 1;
+    for (let y = 0; y < h; y++) {
+      // pillar columns at the edges; solid top lintel row.
+      if (edgeX || y === h - 1) blocks[idx(x, y, 0)] = block;
+    }
+  }
+  return { width: w, height: h, depth, blocks };
+}
+
+/** A torus/ring of `diameter` lying in the XZ plane, `thickness` blocks wide. */
+export function ring(diameter: number, thickness: number, block: string): VoxelGrid {
+  const d = Math.max(4, diameter);
+  const t = Math.max(1, thickness);
+  const blocks: (string | null)[] = new Array(d * d * t).fill(null);
+  const c = (d - 1) / 2;
+  const r = d / 2;
+  const idx = (x: number, y: number, z: number) => (y * d + z) * d + x;
+  for (let y = 0; y < t; y++)
+    for (let z = 0; z < d; z++)
+      for (let x = 0; x < d; x++) {
+        const dx = x - c, dz = z - c;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist >= r - t && dist <= r) blocks[idx(x, y, z)] = block;
+      }
+  return { width: d, height: t, depth: d, blocks };
+}
+
 /** Map a high-level `type` to a concrete voxel grid. `state` (e.g. "axis=y")
  *  is appended to every block id so geometry can carry explicit block state. */
 export function generateGrid(
@@ -128,7 +183,15 @@ export function generateGrid(
       return bridge(size, Math.max(3, Math.floor(size / 2)), b);
     case "stairs":
       return stairs(size, size, b);
+    case "column":
+      return column(Math.max(2, Math.floor(size)), b);
+    case "ramp":
+      return ramp(size, Math.max(2, Math.floor(size / 2)), b);
+    case "arch":
+      return arch(size, Math.max(3, Math.floor(size / 2)), b);
+    case "ring":
+      return ring(size, Math.max(1, Math.floor(size / 4)), b);
     default:
-      throw new Error(`unknown type: ${type} (house|box|tower|pyramid|fence|wall|sphere|dome|bridge|stairs)`);
+      throw new Error(`unknown type: ${type} (house|box|tower|pyramid|fence|wall|sphere|dome|bridge|stairs|column|ramp|arch|ring)`);
   }
 }
