@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mc-agent — Minecraft skins &amp; datapacks for beginners</title>
+    <meta name="description" content="Free, beginner-friendly companion for making Minecraft skin PNGs and structure datapacks — no coding, no AI pixels. Windows." />
+    <style>
+      :root { --bg:#14181f; --panel:#1d232d; --fg:#e6e6e6; --muted:#9fb0c0; --acc:#5ad; --warn:#ffcf8a; }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--fg); line-height:1.6; }
+      .wrap { max-width: 860px; margin: 0 auto; padding: 24px 20px 60px; }
+      header { text-align:center; padding: 40px 0 16px; }
+      h1 { font-size: 34px; margin: 0 0 6px; }
+      .tag { color:var(--muted); font-size:17px; margin:0 0 18px; }
+      .btn { display:inline-block; background:var(--acc); color:#08222e; font-weight:700; text-decoration:none; padding:11px 22px; border-radius:8px; margin:6px; }
+      .btn.ghost { background:transparent; color:var(--acc); border:1px solid var(--acc); font-weight:600; }
+      .disclaimer { margin:22px auto; max-width:700px; padding:12px 16px; border:1px solid #c66; border-radius:8px; color:#ffd9d9; font-size:13px;}
+      .card { background:var(--panel); border:1px solid #2a3340; border-radius:10px; padding:18px 20px; margin:16px 0; }
+      .card h2 { margin-top:0; font-size:19px; }
+      .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
+      .steps { counter-reset: s; list-style:none; padding:0; }
+      .steps li { counter-increment:s; position:relative; padding-left:36px; margin:10px 0; }
+      .steps li::before { content:counter(s); position:absolute; left:0; top:0; width:26px; height:26px; background:var(--acc); color:#08222e; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; }
+      code { background:#0d1117; padding:1px 6px; border-radius:4px; }
+      a { color:var(--acc); }
+      .muted { color:var(--muted); font-size:13px; }
+      .warn { color:var(--warn); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>mc-agent</h1>
+        <p class="tag">Make a Minecraft skin or a structure datapack — no coding, no AI pixels.</p>
+        <div>
+          <a class="btn" href="#download">Download (Windows)</a>
+          <a class="btn ghost" href="https://github.com">View source on GitHub</a>
+        </div>
+        <div class="disclaimer">
+          NOT AN OFFICIAL MINECRAFT PRODUCT, NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
+          This tool creates original skins and textureless datapacks; it never contains official game assets.
+        </div>
+      </header>
+
+      <div class="cards">
+        <div class="card">
+          <h2>Skins</h2>
+          <span>Start from a template (Knight / Mage / Robot), recolor by body part, import your own PNG, paint UV regions, and Export PNG. Works fully offline — no model required.</span>
+        </div>
+        <div class="card">
+          <h2>Builds &amp; datapacks</h2>
+          <span>Pick a shape (house, pyramid, tower, bridge, ring&hellip;), preview it live, and generate a datapack (folder or .zip) you drop into a fresh world and run with <code>/function</code>.</span>
+        </div>
+        <div class="card">
+          <h2>Made for beginners</h2>
+          <span>One-click Windows installer, Idea cards to get started, a clear onboarding consent screen, and a "How to wear" guide. No coding, no account needed to run it.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 id="download">How to get it (Windows)</h2>
+        <ol class="steps">
+          <li>Download the latest <code>mc-agent-win.zip</code> from <strong>Releases</strong> on GitHub.</li>
+          <li>Unzip it anywhere (right-click &rarr; Extract all).</li>
+          <li>Run <code>start.cmd</code>. That's it — no Node.js or install steps.</li>
+        </ol>
+        <p class="muted">On first run, SmartScreen may ask &ldquo;More info &rarr; Run anyway&rdquo; (the app is free/unsigned). Read the included <strong>INSTRUCTIONS.md</strong> for the full guide.</p>
+        <p><a class="btn" href="#download">Download from Releases</a></p>
+      </div>
+
+      <div class="card">
+        <h2>Help us get better</h2>
+        <p>Want to improve mc-agent for yourself or your kid? We'd love real feedback.</p>
+        <ul>
+          <li>Report issues on the GitHub <strong>Issues</strong> tab.</li>
+          <li>Tell us (in one sentence) what was confusing — every reply counts.</li>
+          <li>Join the discussion on our <strong>Discord</strong> (link in the README).</li>
+        </ul>
+      </div>
+
+      <p class="muted warn">
+        Use mc-agent only in <strong>new</strong> worlds/datapack folders — it never writes into an existing save.
+        Custom skins and textureless datapacks only.
+      </p>
+    </div>
+  </body>
+</html>

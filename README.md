@@ -55,7 +55,7 @@ The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `b
 
 ## Checks & release
 - `npm run check` runs the full gate: unit/UI tests, `tsc -b`, tool typechecks, and the headless CLI smoke pipeline. Run it before any release.
-- See [docs/release.md](./docs/release.md) for the release checklist, [docs/qa.md](./.opencode/agents/qa.md) for the QA subagent contract, [docs/evaluation.md](./docs/evaluation.md) for the latest functionality/UX assessment, and [docs/acceptance.md](./docs/acceptance.md) for the manual real-machine acceptance checklist.
+- See [docs/release.md](./docs/release.md) for the release checklist, [docs/qa.md](./.opencode/agents/qa.md) for the QA subagent contract, [docs/evaluation.md](./docs/evaluation.md) for the latest functionality/UX assessment, [docs/acceptance.md](./docs/acceptance.md) for the manual real-machine acceptance checklist, and [docs/github.md](./docs/github.md) for how to publish this project on GitHub (repo topics, releases, and the Pages landing in `site/`).
 
 ## Publishing / external use
 - `node_modules/` and `packages/core/dist/` are gitignored; a fresh clone needs `npm install` (the `prepare` script builds `@mc-agent/core` automatically) and then `npm start` in `packages/app`.
