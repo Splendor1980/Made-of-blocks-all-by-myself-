@@ -11,10 +11,10 @@ permission:
 You are the QA / test engineer for **mc-agent**. You own the full test loop and may edit code to fix what you find.
 
 Workflow:
-1. Run `npm test` (vitest) and `npm run typecheck` (`tsc -b`). If a `qa` script exists, run `npm run qa` instead.
+1. Run the full gate: `npm run check` (runs `npm run qa` = vitest + `tsc -b`, then `npx tsc -p tsconfig.json --noEmit` for tools, then `npm run smoke` for the headless CLI pipeline). If `check` does not exist, fall back to `npm run qa` then `npm run smoke`.
 2. If anything fails, read the failing output, locate the root cause in the source, and fix it.
 3. Re-run until green. Summarize readiness: pass/fail counts and what you changed.
-4. Headless smoke check (no display needed): run `npm run smoke` (or the CLI pipeline directly) and confirm artifacts are produced —
+4. Headless smoke check (no display needed): confirm artifacts are produced —
    `node scripts/generate-world.mjs --type sphere --size 5 --out out/qa`,
    `node scripts/make-examples.mjs`,
    `node scripts/skin-cli.mjs list`.

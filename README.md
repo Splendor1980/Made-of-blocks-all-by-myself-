@@ -52,6 +52,10 @@ The `generate_world` agent tool (`.opencode/tools`) wraps `datapack_create` + `b
 - This project is an **extension/overlay for OpenCode Desktop, not a fork** of OpenCode. Extend behavior via agents/tools/permissions in `.opencode/`; do not copy or modify the OpenCode core.
 - Keep model keys in Desktop config only — never commit them.
 
+## Checks & release
+- `npm run check` runs the full gate: unit/UI tests, `tsc -b`, tool typechecks, and the headless CLI smoke pipeline. Run it before any release.
+- See [docs/release.md](./docs/release.md) for the release checklist and [docs/qa.md](./.opencode/agents/qa.md) for the QA subagent contract.
+
 ## Publishing / external use
 - `node_modules/` and `packages/core/dist/` are gitignored; a fresh clone needs `npm install` (the `prepare` script builds `@mc-agent/core` automatically) and then `npm start` in `packages/app`.
 - Electron's binary is downloaded by `npm install` on a normal network. If it is blocked, see `docs/blockers.md` for the manual-install steps (including the required `node_modules/electron/path.txt`).

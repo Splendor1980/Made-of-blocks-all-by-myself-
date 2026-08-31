@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b",
     "qa": "vitest run && tsc -b",
-    "smoke": "node scripts/generate-world.mjs --type house --size 5 --out out/smoke && node scripts/make-examples.mjs && node scripts/skin-cli.mjs list"
+    "smoke": "node scripts/generate-world.mjs --type house --size 5 --out out/smoke && node scripts/make-examples.mjs && node scripts/skin-cli.mjs list",
+    "check": "npm run qa && npx tsc -p tsconfig.json --noEmit && npm run smoke"
   },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.18.23",
