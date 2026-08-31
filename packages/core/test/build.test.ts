@@ -114,6 +114,16 @@ describe("sanitizeFunction", () => {
     expect(scanLine("# hi", 1)).toBeNull();
     expect(scanLine("", 1)).toBeNull();
   });
+  it("flags a malformed /fill in user-supplied functions", () => {
+    const { violations } = sanitizeFunction([
+      "setblock 0 0 0 stone",
+      "/fill 0 0 0 5 5 5 not_a_real_block",
+      "/fill 0 0 0 5 5 5 stone",
+    ]);
+    const bad = violations.filter((v) => /fill/.test(v.reason));
+    expect(bad.length).toBe(1);
+    expect(bad[0].reason).toMatch(/invalid block/i);
+  });
 });
 
 describe("writeStructureNbt", () => {

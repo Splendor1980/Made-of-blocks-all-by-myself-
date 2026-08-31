@@ -1,5 +1,6 @@
 import { createBlockRegistry, type BlockRegistry } from "./blocks.js";
 import { scanCommands, scanLine, type ScanViolation } from "./security.js";
+import { validateFillLine } from "./fillparse.js";
 
 export interface VoxelGrid {
   width: number;
@@ -93,6 +94,12 @@ export function sanitizeFunction(
 ): { commands: string[]; violations: ScanViolation[] } {
   const reg = registry ?? createBlockRegistry();
   const violations = scanCommands(lines);
+  lines.forEach((l, i) => {
+    const fillErr = validateFillLine(l);
+    if (fillErr && scanLine(l, 0) === null) {
+      violations.push({ line: i + 1, command: l.trim(), reason: `fill: ${fillErr}` });
+    }
+  });
   const commands = lines.filter((l) => {
     const v = scanLine(l, 0);
     return !v;
