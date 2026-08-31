@@ -41,6 +41,27 @@ describe("generate_world (integration)", () => {
     });
   }
 
+  it("accepts a valid explicit block state", async () => {
+    const ctx = await ctxFor(wt);
+    const out: any = await generateWorld.execute(
+      { type: "house", block: "minecraft:oak_log", state: "axis=y", size: 3, name: "pack", namespace: "gen", output: "pack_out" },
+      ctx,
+    );
+    const res = JSON.parse(out.output ?? out);
+    expect(res.error).toBeUndefined();
+    expect(res.datapack.files.length).toBeGreaterThan(0);
+  });
+
+  it("rejects an invalid block state with a readable error", async () => {
+    const ctx = await ctxFor(wt);
+    const out: any = await generateWorld.execute(
+      { type: "house", block: "minecraft:oak_log", state: "axis=warp", size: 3, output: "pack_out" },
+      ctx,
+    );
+    const res = JSON.parse(out.output ?? out);
+    expect(res.error).toMatch(/invalid block id or state/i);
+  });
+
   it("writes an on-disk datapack + nbt loadable in-game", async () => {
     const ctx = await ctxFor(wt);
     await generateWorld.execute({ type: "pyramid", size: 3, name: "pack", output: "pack_out" } as any, ctx);

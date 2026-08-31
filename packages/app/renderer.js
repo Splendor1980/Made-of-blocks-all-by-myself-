@@ -262,11 +262,12 @@ async function initWorlds() {
     const type = document.getElementById("worldType").value;
     const block = document.getElementById("worldBlock").value;
     const size = parseInt(document.getElementById("worldSize").value, 10) || 5;
-    api.previewWorld({ type, block, size }).then((r) => {
+    const state = document.getElementById("worldState").value.trim() || undefined;
+    api.previewWorld({ type, block, size, state }).then((r) => {
       if (r && r.dataUrl) document.getElementById("worldPreview").src = r.dataUrl;
     });
   };
-  ["worldType", "worldBlock", "worldSize"].forEach((id) =>
+  ["worldType", "worldBlock", "worldSize", "worldState"].forEach((id) =>
     document.getElementById(id).addEventListener("change", updatePreview),
   );
   updatePreview();
@@ -354,6 +355,7 @@ async function generateWorld() {
   const type = document.getElementById("worldType").value;
   const block = document.getElementById("worldBlock").value;
   const size = parseInt(document.getElementById("worldSize").value, 10) || 5;
+  const state = document.getElementById("worldState").value.trim() || undefined;
   const out = document.getElementById("worldOut").value;
   const status = document.getElementById("worldStatus");
   const el = document.getElementById("worldResult");
@@ -361,7 +363,7 @@ async function generateWorld() {
   status.textContent = "Generating…";
   openBtn.style.display = "none";
   const res = await api
-    .generateWorld({ type, block, size, out })
+    .generateWorld({ type, block, size, out, state })
     .catch((e) => ({ error: (e && e.message) || String(e) }));
   if (res.error) {
     status.textContent = "";
@@ -369,10 +371,10 @@ async function generateWorld() {
     return;
   }
   status.textContent = "Done.";
-  const pv = await api.previewWorld({ type, block, size }).catch(() => null);
+  const pv = await api.previewWorld({ type, block, size, state }).catch(() => null);
   if (pv && pv.dataUrl) document.getElementById("worldPreview").src = pv.dataUrl;
   el.textContent =
-    `Generated ${type} (${block}, size ${size})\n` +
+    `Generated ${type} (${block}${state ? "[" + state + "]": ""}, size ${size})\n` +
     `In-game: ${res.command}\n` +
     `Drop folder into saves/<world>/datapacks/ :\n` +
     res.files.map((f) => "  " + f).join("\n");
@@ -383,7 +385,7 @@ async function generateWorld() {
   item.textContent = `• ${type} (${size}) → ${res.command}`;
   list.prepend(item);
   document.getElementById("worldZip").style.display = "inline-block";
-  wireZipButton(() => api.generateWorld({ type, block, size, out, zip: true }));
+  wireZipButton(() => api.generateWorld({ type, block, size, out, state, zip: true }));
 }
 
 const IDEAS = [

@@ -6,6 +6,11 @@ export interface GenOptions {
   hollow?: boolean;
 }
 
+/** Appends an explicit `[state]` string to a block id if the caller provided one. */
+export function withState(block: string, state?: string): string {
+  return state ? `${block}[${state}]` : block;
+}
+
 /** A solid or hollow axis-aligned cube of `block` with side `size`. */
 export function box(size: number, block: string, hollow = true): VoxelGrid {
   const blocks: (string | null)[] = new Array(size * size * size).fill(null);
@@ -96,26 +101,33 @@ export function stairs(width: number, steps: number, block: string): VoxelGrid {
   return { width: w, height: s, depth: s, blocks };
 }
 
-/** Map a high-level `type` to a concrete voxel grid. */
-export function generateGrid(type: string, block: string, size: number): VoxelGrid {
+/** Map a high-level `type` to a concrete voxel grid. `state` (e.g. "axis=y")
+ *  is appended to every block id so geometry can carry explicit block state. */
+export function generateGrid(
+  type: string,
+  block: string,
+  size: number,
+  state?: string,
+): VoxelGrid {
+  const b = withState(block, state);
   switch (type) {
     case "house":
     case "box":
-      return box(size, block, type !== "box");
+      return box(size, b, type !== "box");
     case "tower":
     case "pyramid":
-      return pyramid(size, block);
+      return pyramid(size, b);
     case "fence":
     case "wall":
-      return wall(size, Math.max(2, Math.floor(size / 2)), block);
+      return wall(size, Math.max(2, Math.floor(size / 2)), b);
     case "sphere":
-      return sphere(size, block);
+      return sphere(size, b);
     case "dome":
-      return dome(size, block);
+      return dome(size, b);
     case "bridge":
-      return bridge(size, Math.max(3, Math.floor(size / 2)), block);
+      return bridge(size, Math.max(3, Math.floor(size / 2)), b);
     case "stairs":
-      return stairs(size, size, block);
+      return stairs(size, size, b);
     default:
       throw new Error(`unknown type: ${type} (house|box|tower|pyramid|fence|wall|sphere|dome|bridge|stairs)`);
   }

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   createBlockRegistry,
+  validateBlockId,
   gridToMcfunction,
   sanitizeFunction,
   scanLine,
@@ -8,6 +9,8 @@ import {
   box,
   pyramid,
   wall,
+  generateGrid,
+  withState,
   type VoxelGrid,
 } from "../src/build/index.js";
 
@@ -20,6 +23,53 @@ describe("block registry", () => {
   it("rejects unknown blocks", () => {
     expect(reg.isValid("not_a_real_block")).toBe(false);
     expect(reg.normalize("not_a_real_block")).toBeNull();
+  });
+});
+
+describe("block-state validation", () => {
+  const reg = createBlockRegistry("1.20.1");
+
+  it("accepts a valid state key/value", () => {
+    expect(reg.isValid("minecraft:oak_log[axis=y]")).toBe(true);
+    expect(reg.normalize("minecraft:oak_log[axis=y]")).toBe("oak_log[axis=y]");
+  });
+
+  it("accepts an empty state bracket (stateless block)", () => {
+    expect(reg.isValid("minecraft:stone[]")).toBe(true);
+    expect(reg.normalize("stone[]")).toBe("stone");
+  });
+
+  it("rejects an invalid state value for a known block", () => {
+    expect(reg.isValid("minecraft:oak_log[axis=warp]")).toBe(false);
+    expect(reg.normalize("oak_log[axis=warp]")).toBeNull();
+  });
+
+  it("rejects a state key the block does not declare", () => {
+    expect(reg.isValid("minecraft:stone[bogus=1]")).toBe(false);
+  });
+
+  it("validateBlockId reports a readable error", () => {
+    const v = validateBlockId("minecraft:oak_log[axis=warp]");
+    expect(v.valid).toBe(false);
+    expect(v.base).toBe("oak_log");
+    expect(v.error).toMatch(/invalid block id or state/);
+  });
+
+  it("emits explicit state through gridToMcfunction", () => {
+    const { commands, violations } = gridToMcfunction(box(1, "minecraft:oak_log[axis=y]", false));
+    expect(violations).toHaveLength(0);
+    expect(commands[0]).toContain("oak_log[axis=y]");
+  });
+
+  it("generateGrid appends explicit state and still validates", () => {
+    const g = generateGrid("box", "oak_log", 2, "axis=y");
+    const ok = g.blocks.every((b) => !b || reg.isValid(b));
+    expect(ok).toBe(true);
+  });
+
+  it("withState builds id[state] strings", () => {
+    expect(withState("oak_log", "axis=y")).toBe("oak_log[axis=y]");
+    expect(withState("stone")).toBe("stone");
   });
 });
 

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { tool } from "@opencode-ai/plugin";
-import { generateGrid, type VoxelGrid } from "@mc-agent/core";
+import { generateGrid, validateBlockId, type VoxelGrid } from "@mc-agent/core";
 import buildNbt from "./build_nbt";
 import datapackCreate from "./datapack_create";
 
@@ -22,6 +22,7 @@ export default tool({
   args: {
     type: tool.schema.string().describe("house | box | tower | pyramid | fence | wall"),
     block: tool.schema.string().optional().describe("Block id, e.g. minecraft:oak_planks"),
+    state: tool.schema.string().optional().describe("Optional block state, e.g. axis=y for logs"),
     size: tool.schema.number().optional().describe("Base size (cubes/pyramids) or width (wall)"),
     name: tool.schema.string().optional().describe("Datapack folder name"),
     namespace: tool.schema.string().optional().describe("Datapack namespace"),
@@ -30,10 +31,14 @@ export default tool({
   async execute(input, ctx) {
     const type = input.type ?? "house";
     const block = input.block ?? "minecraft:oak_planks";
+    const state = input.state;
     const size = input.size ?? 5;
     const name = input.name ?? "generated_pack";
     const namespace = input.namespace ?? "genmod";
-    const grid = generateGrid(type, block, size);
+    const fullId = state ? `${block}[${state}]` : block;
+    const chk = validateBlockId(fullId);
+    if (!chk.valid) return JSON.stringify({ error: chk.error, blockId: fullId });
+    const grid = generateGrid(type, block, size, state);
     const structId = `${type}_${size}`;
     const nbtRel = join("out", `${structId}.nbt`);
 

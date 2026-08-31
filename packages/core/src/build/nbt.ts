@@ -1,5 +1,6 @@
 import zlib from "node:zlib";
 import type { VoxelGrid } from "./mcfunction.js";
+import { splitBlockId } from "./blocks.js";
 
 type Nbt =
   | { t: "c"; v: [string, Nbt][] }
@@ -56,7 +57,9 @@ export interface StructureOptions {
 
 /**
  * Encodes a voxel grid as a Minecraft structure `.nbt` (Java structure-block
- * format): size, palette (Name only, no block-state properties), and blocks.
+ * format): size, palette (Name + block-state Properties), and blocks.
+ * Blocks given as `base[state]` (e.g. `oak_log[axis=y]`) get their state split
+ * into the `Properties` compound; stateless blocks emit `Name` only.
  */
 export function writeStructureNbt(
   grid: VoxelGrid,
@@ -72,22 +75,38 @@ export function writeStructureNbt(
       for (let x = 0; x < grid.width; x++) {
         const b = grid.blocks[(y * grid.depth + z) * grid.width + x];
         if (!b || b === "air" || b === "") continue;
-        const name = b.includes(":") ? b : `minecraft:${b}`;
-        let i = paletteIndex.get(name);
+        const parsed = splitBlockId(b) ?? { base: b, state: null };
+        const base = parsed.base.includes(":") ? parsed.base : `minecraft:${parsed.base}`;
+        const key = parsed.state ? `${base}[${parsed.state}]` : base;
+        let i = paletteIndex.get(key);
         if (i === undefined) {
           i = paletteNames.length;
-          paletteNames.push(name);
-          paletteIndex.set(name, i);
+          paletteNames.push(key);
+          paletteIndex.set(key, i);
         }
         blocks.push([x, y, z, i]);
       }
     }
   }
 
-  const palette: Nbt[] = paletteNames.map((n) => ({
-    t: "c",
-    v: [["Name", { t: "s", v: n }]],
-  }));
+  const palette: Nbt[] = paletteNames.map((key) => {
+    const parsed = splitBlockId(key) ?? { base: key, state: null };
+    const base = parsed.base.includes(":") ? parsed.base : `minecraft:${parsed.base}`;
+    if (!parsed.state) return { t: "c" as const, v: [["Name", { t: "s", v: base }]] };
+    const props: [string, Nbt][] = parsed.state.split(",").map((pair) => {
+      const eq = pair.indexOf("=");
+      const k = pair.slice(0, eq).trim();
+      const val = pair.slice(eq + 1).trim();
+      return [k, { t: "s", v: val }] as [string, Nbt];
+    });
+    return {
+      t: "c",
+      v: [
+        ["Name", { t: "s", v: base }],
+        ["Properties", { t: "c", v: props }],
+      ],
+    };
+  });
 
   const blockTags: Nbt[] = blocks.map(([x, y, z, state]) => ({
     t: "c",

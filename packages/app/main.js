@@ -136,8 +136,8 @@ ipcMain.handle("getGateStatus", async () => {
 
 ipcMain.handle(
   "generateWorld",
-  async (_e, { type = "house", block = "minecraft:oak_planks", size = 5, out = "out/world", zip = false }) => {
-    const grid = generateGrid(type, block, size);
+  async (_e, { type = "house", block = "minecraft:oak_planks", size = 5, out = "out/world", zip = false, state } = {}) => {
+    const grid = generateGrid(type, block, size, state);
     const structureId = `${type}_${size}`;
     const dp = createDatapack({
       name: "generated_pack",
@@ -172,8 +172,8 @@ ipcMain.handle("openPath", async (_e, { path }) => {
   }
 });
 
-ipcMain.handle("previewWorld", async (_e, { type = "house", block = "minecraft:oak_planks", size = 5 }) => {
-  const grid = generateGrid(type, block, size);
+ipcMain.handle("previewWorld", async (_e, { type = "house", block = "minecraft:oak_planks", size = 5, state } = {}) => {
+  const grid = generateGrid(type, block, size, state);
   return { dataUrl: toDataUrl(renderPreview(grid, { tile: 8 })) };
 });
 
