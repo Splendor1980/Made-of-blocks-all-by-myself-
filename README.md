@@ -5,7 +5,7 @@ OpenCode agents + a **companion Skin Studio UI** for Minecraft creativity (skins
 > **NOT AN OFFICIAL MINECRAFT PRODUCT, NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.**  
 > This tool creates custom skin PNGs and textureless datapacks; it never contains or distributes official Minecraft game assets. See [docs/legal.md](./docs/legal.md) for the full disclaimer.
 
-**New here?** Read [GETTING_STARTED.md](./GETTING_STARTED.md) — a no-coding guide for players.
+**New here?** Read [INSTRUCTIONS.md](./INSTRUCTIONS.md) for the quick run & use guide, or [GETTING_STARTED.md](./GETTING_STARTED.md) for the full no-coding guide for players.
 
 ## What's inside
 - `.opencode/agents/` — `skins` (active), `crafter` (active; builds datapacks/structures).
