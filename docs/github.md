@@ -36,14 +36,19 @@ On the repo page → **About** (right rail) → **gear icon**:
 3. The release gives you a stable public download URL.
 
 ## 5. GitHub Pages landing (recommended, free)
-A static one-page site is included in `site/`. Deploy via the workflow in
-`.github/workflows/pages.yml`:
-1. Repo → **Settings → Pages** → Source: **GitHub Actions**.
-2. Push to `main` → the workflow builds and publishes to
-   `https://<you>.github.io/mc-agent/`.
+A static one-page site (no build step) lives at **`docs/index.html`** and is served
+directly from the `main` branch — no workflow or extra token scope needed:
+1. Repo → **Settings → Pages** → Source: **Deploy from a branch** → Branch `main` →
+   folder `/docs` → **Save**.
+2. After a minute, the landing is live at
+   `https://<you>.github.io/<repo>/` (e.g.
+   `https://splendor1980.github.io/Made-of-blocks-all-by-myself-/`).
 3. On the repo **About**, set the **Website** field to that URL.
 
-Preview locally (optional, needs no tools): just open `site/index.html`.
+Preview locally (optional, no tools): just open `docs/index.html`.
+
+Note: GitHub Pages serves only the `/` or `/docs` folders; that's why the landing is
+under `docs/`. The other `.md` files in `docs/` are served as plain files (harmless).
 
 ## 6. What to update after publishing
 - Put the release/Pages URL into `docs/release.md` (distribution channel) and into your
