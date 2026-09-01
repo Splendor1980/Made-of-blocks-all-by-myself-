@@ -1,6 +1,10 @@
 node_modules/
 dist/
 *.log
+# Pages can be enabled in Settings->Pages (branch main, folder /site) WITHOUT a
+# workflow file; pushing workflow files needs a token with 'workflow' scope, so
+# we keep it out of git. The file remains on disk as reference.
+.github/workflows/
 out/
 test-output/
 .DS_Store
