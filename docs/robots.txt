@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://splendor1980.github.io/Made-of-blocks-all-by-myself-/sitemap.xml

@@ -50,6 +50,20 @@ Preview locally (optional, no tools): just open `docs/index.html`.
 Note: GitHub Pages serves only the `/` or `/docs` folders; that's why the landing is
 under `docs/`. The other `.md` files in `docs/` are served as plain files (harmless).
 
+### Optional SEO base (already committed)
+- `docs/robots.txt` — allows indexing, points to the sitemap.
+- `docs/sitemap.xml` — lists the landing + repo URLs.
+These get published with every push and are enough for a *basic* indexing signal.
+
+### Optional: register in Google Search Console (needs YOUR Google account)
+1. Go to https://search.google.com/search-console → add property → type the Pages URL.
+2. Pick verification: **HTML file** — download the verification file, place it as
+   `docs/<verification>.html`, commit+push (I can add it if you paste the filename).
+3. Submit `sitemap.xml` in Search Console.
+> Honest expectation: this makes the page *technically findable*, but it will NOT
+> produce meaningful traffic for this niche — the real channel is sharing the link
+> in Minecraft communities.
+
 ## 6. What to update after publishing
 - Put the release/Pages URL into `docs/release.md` (distribution channel) and into your
   Discord / community posts.
